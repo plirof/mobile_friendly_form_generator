@@ -1,0 +1,89 @@
+Information on Javascript REGEXP (regular expressions)
+can be found at the following links.
+
+http://www.regular-expressions.info/
+http://www.zytrax.com/tech/web/regex.htm
+http://www.regexbuddy.com/
+http://en.wikipedia.org/wiki/Regular_expression
+
+Examples follow, test these before using them, and use them
+at your own risk with ['js']['regexp'].
+
+
+works for blocks of numbers for dates YYYY-MM-DD
+
+$opts['fdd']['start_date']['js']['regexp'] = '/^[[0-9]{4}-[0-9]{2}-[0-9]{2}]$/'; // modify REGEXP to meet your needs WORKS
+
+restricts Y as 1 or 2 followed by YYY-MM-DD
+
+$opts['fdd']['start_date']['js']['regexp'] = '/^[1-2]{1}[0-9]{3}-[0-9]{2}-[0-9]{2}$/'; // modify REGEXP to meet your needs WORKS
+
+// Allow 1-20 characters a-zA-Z
+
+$opts['fdd']['FirstName']['js']['regexp'] = '/^[a-zA-Z]{1,20}$/';
+
+// Allow 1-20 characters a-zA-Z and an apostrophe
+
+$opts['fdd']['LastName']['js']['regexp'] = '/^[a-zA-Z\']{1,20}$/';
+
+MySQL Date Format
+^\d{4}-(0[0-9]|1[0,1,2])-([0,1,2][0-9]|3[0,1])$
+
+Date Format (m/d/y)
+^([\d]|1[0,1,2])/([0-9]|[0,1,2][0-9]|3[0,1])/\d{4}$
+
+Decimal Number
+^\d*[0-9](\.\d*[0-9])?$
+
+Document Filenames
+^[a-zA-Z0-9-_\.]+\.(pdf|txt|doc|csv)$
+
+E-mail Address
+^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$
+^([0-9a-zA-Z]+([_.-]?[0-9a-zA-Z]+)*@[0-9a-zA-Z]+[0-9,a-z,A-Z,.,-]*(.){1}[a-zA-Z]{2,4})+$
+
+HTML Color Codes
+^#?([a-f]|[A-F]|[0-9]){3}(([a-f]|[A-F]|[0-9]){3})?$
+
+Image Filenames
+^[a-zA-Z0-9-_\.]+\.(jpg|gif|png)$
+
+IP Address
+^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$
+
+Multimedia Filenames
+^[a-zA-Z0-9-_\.]+\.(swf|mov|wma|mpg|mp3|wav)$
+
+Phone Number format 555-555-1212
+^[2-9]\d{2}-\d{3}-\d{4}$
+
+Postal Code (Canada)
+^([A-Z][0-9]){3}$
+
+Social security number, such as: ###-##-####
+0-9]\{3\}-[0-9]\{2\}-[0-9]\{4\}
+
+Time Format (HH:MM)
+^([0-1][0-9]|[2][0-3])(:([0-5][0-9])){1,2}$
+
+URL
+^(http[s]?://|ftp://)?(www\.)?[a-zA-Z0-9-\.]+\.(com|org|net|mil|edu|ca|co.uk|com.au|gov)$
+
+Versatile Phone Number
+^(([0-9]{1})*[- .(]*([0-9a-zA-Z]{3})*[- .)]*[0-9a-zA-Z]{3}[- .]*[0-9a-zA-Z]{4})+$
+
+U.S. Zip Code. Five digits, followed by an optional hyphen and four additional digits.
+[0-9]\{5\}(-[0-9]\{4\})?
+
+[:digit:]    Only the digits 0 to 9
+[:alnum:]    Any alphanumeric character 0 to 9 OR A to Z or a to z.
+[:alpha:]    Any alpha character A to Z or a to z.
+[:blank:]    Space and TAB characters only.
+[:xdigit:]    Hexadecimal notation 0-9, A-F, a-f.
+[:punct:]    Punctuation symbols . , " ' ? ! ; : # $ % & ( ) * + - / < > = @ [ ] \ ^ _ { } | ~
+[:print:]    Any printable character.
+[:space:]    Any whitespace characters (space, tab, NL, FF, VT, CR). Many system abbreviate as \s.
+[:graph:]    Exclude whitespace (SPACE, TAB). Many system abbreviate as \W.
+[:upper:]    Any alpha character A to Z.
+[:lower:]    Any alpha character a to z.
+[:cntrl:]    Control Characters NL CR LF TAB VT FF NUL SOH STX EXT EOT ENQ ACK SO SI DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC IS1 IS2 IS3 IS4 DEL.

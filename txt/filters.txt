@@ -1,0 +1,846 @@
+Misc. examples, including filter examples for phpMyEdit-based forms.
+
+If implemented in a system that has a log-in mechanism, 
+it can be beneficial to alter permissions based on the
+user level, or user id, of the currently logged-in user.
+
+If the data includes a record owner id, then displayed records
+could be filtered, limiting the display to records belonging 
+to a specific user.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// phpMyEdit filter
+$opts['filters'] = 'valid_user= "'.$valid_user.'"';
+
+// Make valid_user persistent
+$opts['cgi']['persist'] = array('valid_user' => $valid_user);
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$opts['filters'] = 'auth_user= "'.$_SESSION['PHP_AUTH_USER'].'"';
+
+$opts['cgi']['persist'] = array('auth_user' => $_SESSION['PHP_AUTH_USER']);
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Filter records based on a letter passed to the form and make it persistent.
+
+$ltr = array_key_exists('ltr', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['ltr']))) : '';
+
+$opts['filters'] = 'company REGEXP "^'.$ltr.'"'; // company records must begin with $ltr
+
+$opts['cgi']['persist'] = array('ltr' => $ltr );
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+The following configures a persistent table level filter for one record.
+
+Record remains filtered even if user clicks Cancel to leave View mode.
+
+$id = array_key_exists('id', @$_GET) ?  @$_GET['id'] : $rec;
+
+$opts['cgi']['persist'] = array('id' => $col_name);
+
+$opts['filters'] = $id > 0 ? "col_name = '$id'" : '';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+When filtering records *and* doing lookups to another table
+where *both* tables contain a column of the same name, you will
+likely need to call your filter as:
+
+   $opts['filters'] = 'PMEtable0.deleted = "N"';
+
+and *not* simply:
+
+   $opts['filters'] = 'deleted = "N"';
+
+The first table is PMEtable0 and any lookups are assigned PMEtable1.
+
+$opts['fdd']['owner_id'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '0',
+  'input'      => '',
+  'maxlen'     => 5,
+  'name'       => 'Site Owner',
+  'options'    => 'ACPVD',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 5,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'     => array(
+    'table'       => 'contacts',
+    'column'      => 'contact_id',
+    'description' => array(
+      'columns'    => array('display_name', 'company', 'last_name'),
+      'divs'    => array(' ', ' ', ' ')
+    ),
+     'filters'  => 'category = "Client"'
+  )
+);
+// MySQL column 30: int - smallint(5) unsigned
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Note: 'filters' is used for filtering items in dropdown during ADD/CHANGE  mode using with a SQL WHERE. And ['join'] is useful for having a correct LEFT JOIN against the main table in LIST/VIEW mode.
+
+$opts['fdd']['vendor']['values']['join'] =
+   'PMEjoin6.part_no = PMEtable0.part_no AND is_preferred = "TRUE" ';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Force the Search feature ON:
+
+$opts['cgi']['append']['PME_sys_fl'] = 1; // Version 5.0+
+
+$opts['cgi']['append']['fl'] = 1;         // older phpMyEdit versions
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+See filters2.txt for example of filtering
+for the first letter of a Company or Last Name.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Disable all filters
+$opts['cgi']['overwrite']['fl'] = 0;
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Prevent the sort order from being altered by column title links
+
+$opts['cgi']['overwrite']['PME_sys_sfn'] = '-0';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$opts['filters'] = 'PMEjoin1.FullName NOT LIKE "%..%"';
+
+$opts['filters'] = 'PMEtable0.FullName NOT LIKE "%--Select--%"';
+
+$opts['filters'] = 'PMEtable0.FullName NOT LIKE "%..%"';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Variables used in most filters can be passed from another form, or from a link included in the page footer.
+
+<a href="my_form.php?ltr=A">A</a>
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+In the requested form, process the variable and make it persistent across various page modes (Next, Previous, Search, Cancel).
+
+$ltr = array_key_exists('ltr', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['ltr']))) : '';
+
+$opts['cgi']['persist'] = array('ltr' => $ltr);
+
+--- OR ---
+
+$ltr = @$_GET['ltr'];
+
+if(!isset($ltr)) {
+
+   $ltr = @$_POST['ltr'];
+
+}
+
+$opts['cgi']['persist'] = array('ltr' => $ltr);
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+A sessions script passes $_SESSION['valid_user'] AND a column named valid_user also exists
+in rows of records accessible only to $_SESSION['valid_user'] and fictitious user 'public'.
+
+$opts['filters'] = 'valid_user = "'.$_SESSION['valid_user'].'" OR valid_user = "public"';
+
+$opts['cgi']['persist'] = array('valid_user' => $_SESSION['valid_user'] );
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*
+ * fl2 is an acronym for filter #2 since
+ * fl is the name of phpMyEdit's default filter.
+ *
+ * Usage = links in form footer:
+<a style="color:#99ccff" href="my_form.php">All Records</a> |
+<a style="color:#99ccff" href="my_form.php?fl2=1">1</a> |
+<a style="color:#99ccff" href="my_form.php?fl2=2">2</a> |
+<a style="color:#99ccff" href="my_form.php?fl2=3">3</a>
+
+ */
+
+$fl2 = array_key_exists('fl2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl2']))) : '';
+
+if($fl2 > 0) {
+   $opts['cgi']['persist'] = array('fl2' => $fl2);
+}
+
+switch($fl2)
+{
+   Case 1:
+      $opts['filters'] = ''; // enter valid SQL
+      break;
+   Case 2:
+      $opts['filters'] = ''; // enter valid SQL
+      break;
+   Case 3:
+      $opts['filters'] = ''; // enter valid SQL
+      break;
+   Case 0:
+   default:
+      break;
+}
+
+// $oper_label .= isset($fl2) && $fl2 == 'user' ? ' Authorized Users' : ' All Hits';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// sfn is a sort function in phpMyEdit.class.php
+// name the user sort function sfn2
+
+$sfn2 = array_key_exists('sfn2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['sfn2']))) : '';
+
+$opts['cgi']['persist'] = array('sfn2' => $sfn2);
+
+switch($sfn2)
+{
+   Case 1:
+      $opts['sort_field'] = array('-id'); // descending
+      break;
+   Case 0: // fall through to default
+   default:
+      $opts['sort_field'] = array('id'); // ascending
+      break;
+}
+
+Links in footer:
+
+<a title="Ascending ID" href="my_form.php?sfn2=0">Ascending ID</a>
+ -
+<a title="Descending ID" href="my_form.php?sfn2=1">Descending ID</a>
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// $lnltr = first letter of LastName passed (page.php?lnltr=A)
+// $bzltr = first letter of Company passed  (page.php?bzltr=A)
+
+if(empty($operation) && empty($morechange)) {
+
+   if(!isset($lnltr)) {
+
+      $lnltr = array_key_exists('lnltr', @$_GET) ? @$_GET['lnltr'] : '' ;
+
+   }elseif(!isset($bzltr)) {
+
+      $bzltr = array_key_exists('bzltr', @$_GET) ? @$_GET['bzltr'] : '' ;
+
+   }
+
+   if(!empty($lnltr)) {
+
+      // Filter Agent ID and letter
+
+      $opts['filters'] = 'RecordOwnerID = "'.$AgentID.'" AND PMEtable0.LastName REGEXP "^'.$lnltr.'"';
+
+      $opts['cgi']['persist'] = array('lnltr' => $lnltr );
+
+      $opts['sort_field'] = array('LastName', 'FirstName', 'Company');
+
+      $notice = 'LastName filter = '.$lnltr;
+
+   }elseif(!empty($bzltr)) {
+
+      // Filter Agent ID and letter
+
+      $opts['filters'] = 'RecordOwnerID = "'.$AgentID.'" AND PMEtable0.Company REGEXP "^'.$bzltr.'"';
+
+      $opts['cgi']['persist'] = array('bzltr' => $bzltr );
+
+      $opts['sort_field'] = array('Company', 'LastName', 'FirstName');
+
+      $notice = 'Company filter = '.$bzltr;
+
+   }else{
+
+      // Filter Agent ID only
+
+      $opts['filters'] = 'RecordOwnerID = "'.$AgentID.'"';
+
+      $opts['sort_field'] = array('LastName', 'Company');
+
+      $notice = '';
+
+   }
+
+}else{
+
+   $oper_label = $operation;
+
+}
+
+// Page footer:
+
+if(empty($operation) && empty($morechange)) {
+
+<table align="center">
+
+if(!empty($lnltr) || !empty($bzltr)) {
+
+<tr><td><a style="color:#FF0000" href="<?php echo basename($_SERVER["PHP_SELF"]); ?>">Remove Filter</a></td><td><?php echo ' <span style="color:#FF0000">'.$notice.'</span>'; ?></td></tr>
+
+};
+
+<tr><td>Last Name Filter:</td><td>
+
+for($i=65; $i<91; ++$i) {
+
+   echo '<a href="'.basename($_SERVER["PHP_SELF"]).'?lnltr='.chr($i).'">'.chr($i).'</a>';
+
+   echo ($i < 90) ? ' - '."\n" : "\n";
+
+}
+
+</td></tr><tr><td>Company Filter:</td><td>
+
+for($i=65; $i<91; ++$i) {
+
+   echo '<a href="'.basename($_SERVER["PHP_SELF"]).'?bzltr='.chr($i).'">'.chr($i).'</a>';
+
+   echo ($i < 90) ? ' - '."\n" : "\n";
+
+}
+
+</td></tr>
+
+</table>
+
+};
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$fl2 = array_key_exists('fl2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl2']))) : '';
+
+if($fl2 > 0) { $opts['cgi']['persist'] = array('fl2' => $fl2); }
+
+$oper_label = empty($operation) ? 'List' : $operation;
+
+switch($fl2) {
+
+   Case 1:
+
+      $opts['filters'] = 'SourceFlag = "MDD2" AND MLS2_SN <> ".."';
+
+      $opts['sort_field'] = array('MLS4_ST', 'MLS2_SN', 'MLS3_STRD');
+
+      $oper_label = 'List MDD2';
+
+      break;
+
+   Case 2:
+
+      $opts['filters'] = 'SourceFlag = "MDD2-REC" AND MLS2_SN <> ".."';
+
+      $opts['sort_field'] = array('MLS4_ST', 'MLS2_SN', 'MLS3_STRD');
+
+      $oper_label = 'List MDD2-REC';
+
+      break;
+
+   Case 3:
+
+      $opts['filters'] = 'SourceFlag = "AFS" AND MLS2_SN <> ".."';
+
+      $opts['sort_field'] = array('MLS4_ST', 'MLS2_SN', 'MLS3_STRD');
+
+      $oper_label = 'List AFS';
+
+      break;
+
+   Case 4:
+
+      $opts['filters'] = 'SourceFlag = "ACTIVE" AND MLS2_SN <> ".."';
+
+      $opts['sort_field'] = array('MLS4_ST', 'MLS2_SN', 'MLS3_STRD');
+
+      $oper_label = 'List Active';
+
+      break;
+
+   Case 5:
+
+      $opts['filters'] = 'SourceFlag = "PENDING" AND MLS2_SN <> ".."';
+
+      $opts['sort_field'] = array('MLS4_ST', 'MLS2_SN', 'MLS3_STRD');
+
+      $oper_label = 'List Pending';
+
+      break;
+
+   Case 6:
+
+      $opts['filters'] = 'SourceFlag = "MDD2-REC" OR SourceFlag = "MDD2" AND MLS2_SN <> ".."';
+
+      $opts['sort_field'] = array('MLS4_ST', 'MLS2_SN', 'MLS3_STRD');
+
+      $oper_label = 'List MDD2 and MDD2-REC';
+
+      break;
+
+   Case 0: // fall thru (ALL records)
+
+   default:
+
+      $opts['sort_field'] = array('MLSNum');
+
+      $oper_label = 'List All by MLSNum';
+
+      break;
+
+}
+
+// Page footer:
+
+echo "\n".'<table><tr class="pme-row-1"><td>Filters:</td>'."\n";
+
+echo ($fl2 != 0) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=0">ALL</a> (select before using Search feature below)</td>' : '<td>ALL records selected</td>';
+
+echo ($fl2 != 1) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=1">MDD2</a></td>' : '<td>MDD2</td>';
+
+echo ($fl2 != 2) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=2">MDD2-REC</a></td>' : '<td>MDD2-REC</td>';
+
+echo ($fl2 != 6) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=6">MDD2 and MDD2-REC</a></td>' : '<td>MDD2 and MDD2-REC</td>';
+
+echo ($fl2 != 3) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=3">AFS</a></td>' : '<td>AFS</td>';
+
+echo ($fl2 != 4) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=4">ACTIVE</a></td>' : '<td>ACTIVE</td>';
+
+echo ($fl2 != 5) ? '<td><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=5">PENDING</a></td>' : '<td>PENDING</td>';
+
+echo "\n".'</tr></table>'."\n";
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// RecordOwnerID - smallint(5) unsigned - int
+$opts['fdd']['RecordOwnerID'] = array(
+  'name'     => 'Record Owner ID',
+  'select'   => 'D',
+  'options'  => 'ACPVD',
+  'maxlen'   => 5,
+  'default'  => '0',
+  'required' => false,
+  'sort'     => true
+);
+
+$opts['fdd']['RecordOwnerID']['values']['table'] = 'mdd_staff'; // other table
+
+$opts['fdd']['RecordOwnerID']['values']['column'] = 'AgentID'; // column e.g. id
+
+$opts['fdd']['RecordOwnerID']['values']['description']['columns']['0'] = 'FullName';
+
+$opts['fdd']['RecordOwnerID']['values']['filters'] = 'AgentID = "'.$AgentID.'"';
+
+$opts['cgi']['overwrite']['RecordOwnerID'] = $AgentID;
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// LastModByID - smallint(5) unsigned - int
+$opts['fdd']['LastModByID'] = array(
+  'name'     => 'Last Mod By ID',
+  'select'   => 'D',
+  'options'  => 'ACPVD',
+  'maxlen'   => 5,
+  'default'  => '0',
+  'required' => false,
+  'sort'     => true
+);
+
+$opts['fdd']['LastModByID']['values']['table'] = 'mdd_staff'; // other table
+
+$opts['fdd']['LastModByID']['values']['column'] = 'AgentID'; // column e.g. id
+
+$opts['fdd']['LastModByID']['values']['description']['columns']['0'] = 'FullName';
+
+$opts['fdd']['LastModByID']['values']['filters'] = 'AgentID = "'.$AgentID.'"';
+
+$opts['cgi']['overwrite']['LastModByID'] = $AgentID;
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// FILTER ONLY FOR COMPANY RECORDS AgentID = 86
+
+if(empty($operation) && empty($morechange)) {
+
+   if(!isset($lnltr)) {
+
+      $lnltr = array_key_exists('lnltr', @$_GET) ? @$_GET['lnltr'] : '' ;
+
+   }elseif(!isset($bzltr)) {
+
+      $bzltr = array_key_exists('bzltr', @$_GET) ? @$_GET['bzltr'] : '' ;
+
+   }
+
+   if(!empty($lnltr)) {
+
+      // Filter MDD (86)
+
+      $opts['filters'] = 'RecordOwnerID = "86" AND PMEtable0.LastName REGEXP "^'.$lnltr.'"';
+
+      $opts['cgi']['persist'] = array('lnltr' => $lnltr );
+
+      $opts['sort_field'] = array('LastName', 'FirstName', 'Company');
+
+      $notice = 'LastName filter = '.$lnltr;
+
+   }elseif(!empty($bzltr)) {
+
+      $opts['filters'] = 'RecordOwnerID = "86" AND PMEtable0.Company REGEXP "^'.$bzltr.'" OR RecordOwnerID = "86" AND PMEtable0.Company REGEXP "^'.$bzltr.'"';
+
+      $opts['cgi']['persist'] = array('bzltr' => $bzltr );
+
+      $opts['sort_field'] = array('Company', 'LastName', 'FirstName');
+
+      $notice = 'Company filter = '.$bzltr;
+
+   }else{
+
+      $opts['sort_field'] = array('LastName', 'Company');
+
+      $opts['filters'] = 'RecordOwnerID = "86"';
+
+      $notice = '';
+
+   }
+
+}else{
+
+   $oper_label = $operation;
+
+}
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$opts['filters'] = 'Category <> ".."';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$opts['filters'] = 'MessageFor = "'.$AgentID.'" AND PMEtable0.Status <> 1';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$opts['filters'] = 'PMEtable0.AgentID = "'.$AgentID.'"';
+
+$opts['cgi']['persist'] = array('AgentID' => $AgentID);
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$grouping = array_key_exists('grouping', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['grouping']))) : '';
+
+$opts['cgi']['persist'] = array('grouping' => $grouping);
+
+if($grouping) {
+
+   $opts['sort_field'] = array('System', 'AgentID');
+
+   $oper_label = empty($operation) ? 'Click column titles to sort records' : $operation;
+
+}else{
+
+   $opts['filters'] = 'PMEjoin1.FullName NOT LIKE "%..%"';
+
+   $opts['sort_field'] = array('AgentID');
+
+   $oper_label = empty($operation) ? 'Telephone DID Configuration' : $operation;
+
+}
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// AgentID - mediumint(8) - int
+$opts['fdd']['AgentID'] = array(
+  'name'     => 'Agent',
+  'select'   => 'D',
+  'maxlen'   => 8,
+  'default'  => '0',
+  'required' => true,
+  'sort'     => true
+);
+
+$opts['fdd']['AgentID']['help|ACP'] = 'Select';
+
+$opts['fdd']['AgentID']['values']['table'] = 'mdd_staff'; // other table
+
+$opts['fdd']['AgentID']['values']['column'] = 'AgentID'; // column e.g. id
+
+$opts['fdd']['AgentID']['values']['description']['columns']['0'] = 'FullName';
+
+$opts['fdd']['AgentID']['values']['filters'] = 'Status = 1';
+
+$opts['fdd']['AgentID']['nowrap'] = true;
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Address - mediumint(8) - int
+$opts['fdd']['Address'] = array(
+  'name'     => 'Address',
+  'select'   => 'D',
+  'maxlen'   => 8,
+  'default'  => '0',
+  'required' => false,
+  'sort'     => true
+);
+
+$opts['fdd']['Address']['values']['table'] = 'all_data';
+
+$opts['fdd']['Address']['values']['column'] = 'HouseID';
+
+$opts['fdd']['Address']['values']['description']['columns']['0'] = 'Street';
+
+$opts['fdd']['Address']['values']['description']['divs']['0']    = ' ';
+
+$opts['fdd']['Address']['values']['description']['columns']['1'] = 'StNo';
+
+$opts['fdd']['Address']['values']['description']['divs']['1']    = ' ';
+
+$opts['fdd']['Address']['values']['description']['columns']['2'] = 'StDir';
+
+$opts['fdd']['Address']['values']['description']['divs']['2']    = ' ';
+
+$opts['fdd']['Address']['values']['description']['columns']['3'] = 'Unit';
+
+$opts['fdd']['Address']['values']['filters'] = 'Street > "" AND Status = "1" OR Status = "3" ';
+
+$opts['fdd']['Address']['values']['orderby'] = 'Street';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Possible setting: $opts['sort_field'] = array('id');
+
+// Replace with:
+
+$order = array_key_exists('order', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['order']))) : '';
+
+$opts['cgi']['persist'] = array('order' => $order);
+
+$opts['sort_field'] = empty($order) ? array('id') : array(-'id');
+
+<a href="my_form.php?order=0">First Record</a>
+
+<a href="my_form.php?order=1">Last Record</a>
+
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Near top of form:
+
+/**
+ * fl2 is an acronym for filter #2 since
+ * fl is the name of phpMyEdit's default filter.
+ *
+ * Usage = links in form footer:
+ *    <a href="edit_vs_content1a.php?fl2=1">1</a>
+ *    <a href="edit_vs_content1a.php?fl2=2">2</a>
+ *    <a href="edit_vs_content1a.php?fl2=3">3</a>
+ */
+
+$fl2 = array_key_exists('fl2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl2']))) : '';
+
+if($fl2 > 0) {
+
+   $opts['cgi']['persist'] = array('fl2' => $fl2);
+
+   $opts['filters'] = "col_name='$fl2'"; // enter valid SQL
+
+}
+
+Near bottom of form:
+
+if(empty($operation)){
+
+   if($res = @mysql_query("SELECT col_name, link FROM ".$opts['tb']." WHERE pnum = '0' ORDER BY col_name") or die('<p style="color:#ff0000">Query failed [#1]. '.mysql_errno().': '.mysql_error().'</p></body></html>')){
+
+      echo "\n".'<tr><td>Work only with:<ul>';
+
+      while($ary = @mysql_fetch_assoc($res)) {
+
+         while(list($key,$val) = each($ary)) {
+
+            $$key = htmlspecialchars(stripslashes(trim($val)));
+
+         }
+
+         echo "\n".'<li><a href="edit_vs_content1a.php?fl2='.$col_name.'">'.$col_name.' - '.$link.'</a></li>';
+
+      }
+
+      echo "\n".'<li><a href="edit_vs_content1a.php">All Records</a></li></ul></td></tr>';
+
+   }
+
+}
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Near top of form:
+
+$fl2 = array_key_exists('fl2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl2']))) : '';
+
+if($fl2 > 0) {
+
+   $opts['cgi']['persist'] = array('fl2' => $fl2);
+
+}
+
+switch($fl2) {
+
+   Case 1:
+
+      $opts['filters'] = 'COUPLER = "1"'; // enter valid SQL
+
+      break;
+
+   Case 2:
+
+      $opts['filters'] = 'ADAPTER = "1"'; // enter valid SQL
+
+      break;
+
+   Case 3:
+
+      $opts['filters'] = 'STARTER = "1"'; // enter valid SQL
+
+      break;
+
+   Case 4:
+
+      $opts['filters'] = 'SADDLE = "1"'; // enter valid SQL
+
+      break;
+
+   Case 5:
+
+      $opts['filters'] = 'TEE = "1"'; // enter valid SQL
+
+      break;
+
+   Case 6:
+
+      $opts['filters'] = 'REDUCER = "1"'; // enter valid SQL
+
+      break;
+
+   Case 0:
+
+   default:
+
+      break;
+
+}
+
+Near bottom of form:
+
+<?php if(empty($operation) && empty($morechange)) { ?>
+
+Data Filters:<br>
+
+<a href="<?php echo basename($_SERVER["PHP_SELF"]); ?>?fl2=1">Couplers</a><br>
+
+<a href="<?php echo basename($_SERVER["PHP_SELF"]); ?>?fl2=2">Adapters</a><br>
+
+<a href="<?php echo basename($_SERVER["PHP_SELF"]); ?>?fl2=3">Starters</a><br>
+
+<a href="<?php echo basename($_SERVER["PHP_SELF"]); ?>?fl2=4">Saddles</a><br>
+
+<a href="<?php echo basename($_SERVER["PHP_SELF"]); ?>?fl2=5">Tees</a><br>
+
+<a href="<?php echo basename($_SERVER["PHP_SELF"]); ?>?fl2=6">Reducers</a><br>
+
+<br><br><hr size="1">[V]iew<br>[C]hange<br>co[P]y<br>[D]elete
+
+<?php }; ?>
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+if(empty($operation) && empty($morechange)){
+
+   if($res = @mysql_query("SELECT snum, link FROM ".$opts['tb']." WHERE pnum = '0' ORDER BY snum") or die('<p style="color:#ff0000">Query failed [#1]. '.mysql_errno().': '.mysql_error().'</p></body></html>')){
+
+      echo "\n".'<tr><td>Work only with:<ul>';
+
+      while($ary = @mysql_fetch_assoc($res)) {
+
+         while(list($key,$val) = each($ary)) {
+
+            $$key = htmlspecialchars(stripslashes(trim($val)));
+
+         }
+
+         echo "\n".'<li><a href="edit_vs_content1a.php?fl2='.$snum.'">'.$snum.' - '.$link.'</a></li>';
+
+      }
+
+      echo "\n".'<li><a href="edit_vs_content1a.php">All Records</a></li></ul></td></tr>';
+
+   }
+
+}
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Forum post:
+
+Please note that 'filters' is used for filtering items in dropdown
+during ADD/EDIT mode (with a sql WHERE) ... while 'join' is useful
+for having a correct LEFT JOIN against the main table in LIST/VIEW mode.
+
+$opts['fdd']['vendor']['values']['join'] =
+   'PMEjoin0.part_no = PMEjoin1.part_no AND is_preferred = "true" ';
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// top of form
+
+$fl2 = array_key_exists('fl2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl2']))) : '';
+
+if($fl2 > '') {
+
+   $opts['cgi']['persist'] = array('fl2' => $fl2);
+
+   $tmp = str_replace('_', ' ', $fl2);
+
+   $opts['filters'] = "item_category = '$tmp'";
+
+   echo '<tr><td><b>'.$tmp.'</b></td></tr>'."\n\n";
+
+}
+
+// bottom of form
+
+if(empty($operation) && empty($morechange)){
+
+   if($res = @mysql_query("SELECT DISTINCT item_category FROM {$opts['tb']} ORDER BY item_category")){
+
+      echo "\n".'<tr><td>Work only with:<ul>';
+
+      while($ary = @mysql_fetch_assoc($res)) {
+
+         while(list($key,$val) = each($ary)) {
+
+            $$key = stripslashes(trim($val));
+
+         }
+
+         $item_category = str_replace(' ', '_', $item_category);
+
+         echo "\n".'<li><a href="inventory1.php?fl2='.$item_category.'">'.$item_category.'</a></li>';
+
+      }
+
+      echo "\n".'<li><a href="inventory1.php">All Records</a></li></ul></td></tr>';
+
+   }
+
+}
+

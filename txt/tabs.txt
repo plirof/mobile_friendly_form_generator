@@ -1,0 +1,159 @@
+Two tabs are implemented below, near  // *****************************
+
+The first column must have a tab in order for others to work as planned.
+
+Tabs can also be post-initialized as
+$opts['fdd']['email']['tab|ACP'] = 'Email';
+
+
+// column 0: `employee_number` int(11)
+// flags: auto_increment
+
+$opts['fdd']['employee_number'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'Limit 10 digits',
+  'input'      => 'R',
+  'name'       => 'Employee Number',
+  'options'    => 'VCDFL',
+  'select'     => 'T',
+  'size'       => 10,
+  'sort'       => true,
+  'tab|ACP'    => 'Employee Number' // *****************************
+);
+
+
+// column 1: `last_name` varchar(50)
+
+$opts['fdd']['last_name'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 50 characters',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'Last Name',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['last_name']['js']['required'] = true;
+$opts['fdd']['last_name']['js']['hint'] = 'An entry is required for Last Name';
+
+
+// column 2: `first_name` varchar(50)
+
+$opts['fdd']['first_name'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 50 characters',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'First Name',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['first_name']['js']['required'] = true;
+$opts['fdd']['first_name']['js']['hint'] = 'An entry is required for First Name';
+
+
+// column 3: `extension` varchar(10)
+
+$opts['fdd']['extension'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 10 characters',
+  'input'      => '',
+  'maxlen'     => 10,
+  'name'       => 'Extension',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 10,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+
+// column 4: `email` varchar(100)
+
+$opts['fdd']['email'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 100 characters',
+  'input'      => '',
+  'maxlen'     => 100,
+  'name'       => 'Email',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 90,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'tab|ACP'    => 'Email' // ******************************
+);
+
+
+// column 5: `office_code` varchar(10)
+
+$opts['fdd']['office_code'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 10 characters',
+  'input'      => '',
+  'maxlen'     => 10,
+  'name'       => 'Office Code',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size'       => 10,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+// Basic lookup to another table
+  'values'   => array(
+    'table' => 'demo1_offices',
+    'column' => 'office_code',
+    'description'=> array(
+       'columns' => array('city','state','country'),
+       'divs'     => array(' ', ' ', ' ')
+     )
+   )
+);
+
+
+// column 6: `reports_to` int(11)
+
+$opts['fdd']['reports_to'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'Limit 10 digits',
+  'input'      => '',
+  'maxlen'     => 10,
+  'name'       => 'Reports To',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size'       => 10,
+  'sqlw'       => 'IF($val_qas = "", NULL, $val_qas)',
+  'sort'       => true,
+// Basic lookup to another table
+  'values'   => array(
+    'table' => 'demo1_employees',
+    'column' => 'employee_number',
+    'description'=> array(
+       'columns' => array('last_name', 'first_name'),
+       'divs'     => array(', ')
+     )
+   )
+);
+
+
+// column 7: `job_title` varchar(50)
+
+$opts['fdd']['job_title'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 50 characters',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'Job Title',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size'       => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);

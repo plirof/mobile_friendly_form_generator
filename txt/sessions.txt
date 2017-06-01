@@ -1,0 +1,67 @@
+
+examples for setting sessions
+
+################################################################################
+
+function my_session_handler()
+{
+   if(session_id() == ''){
+      $_SESSION = array();
+      @session_start();
+      @header("Cache-Control: private");
+   }else{
+      @session_id(strip_tags(session_id()));
+   }
+   if(isset($_REQUEST['end_sess']) && $_REQUEST['end_sess'] == 1){
+      @session_unset();
+      $_SESSION = array();
+      @session_destroy();
+      $PHPSESSID = '';
+   }
+};
+
+my_session_handler();
+
+################################################################################
+
+
+function my_session_handler()
+{
+   if(@session_id() == ''){
+      $_SESSION = array();
+      @session_start();
+      @header("Cache-Control: private");
+   }else{
+      @session_id(strip_tags(session_id()));
+   }
+   if(!isset($_SESSION['sess_user_name'])){
+      if(isset($_SERVER['PHP_AUTH_USER'])){
+         $_SESSION['sess_user_name'] = $_SERVER['PHP_AUTH_USER'];
+      }elseif(isset($REMOTE_USER)){
+         $_SESSION['sess_user_name'] = $REMOTE_USER;
+      }elseif(!empty($_ENV) && isset($_ENV['REMOTE_USER'])){
+         $_SESSION['sess_user_name'] = $_ENV['REMOTE_USER'];
+      }elseif(getenv('REMOTE_USER')){
+         $_SESSION['sess_user_name'] = getenv('REMOTE_USER');
+      }else
+   }
+   // If a link is passed to page.php?end_session=1
+   if(array_key_exists('end_session', $_REQUEST) && $_REQUEST['end_session'] == 1){
+      @session_unset();
+      $_SESSION = array();
+      @session_destroy();
+      $PHPSESSID = '';
+   }
+};
+
+my_session_handler();
+
+// later, in phpMyEdit forms
+
+$opts['filters'] = 'user_name = "'.$_SESSION['sess_user_name'].'"';
+
+$opts['cgi']['persist'] = array('user_name' => $_SESSION['sess_user_name'] );
+
+################################################################################
+
+

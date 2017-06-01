@@ -1,0 +1,21 @@
+/* phpMyEdit's View, Add, Change, coPy, and Delete modes may need to be slightly different from CSS in List mode. */
+table, table.striped, table.pme-navigation{ margin: 0 0 15px 0; }
+td.pme-navigation-0, td.pme-navigation-1, th.pme-header{ white-space: nowrap; }
+/* over-ride bootstrap in Add, Change, coPy, Delete modes */
+p.pme-message, th, td.pme-message, td.pme-stats, td.pme-help-0, td.pme-help-1, td.pme-help-0-right-justify, td.pme-help-1-right-justify{
+	background-color: transparent;
+	color: #3a87ad;
+	text-align: left; 
+}
+/* left column in ACP modes, attempt to over-ride Bootstrap in Add/Change mode to keep the left column relatively small */
+td.pme-key-0-right-justify, td.pme-key-0{
+	max-width: 200px;
+	white-space:nowrap; /* in View mode prevent labels from wrapping */
+}
+/* Bootstrap nmay omit TEXTAREA background color */
+textarea{ background-color: #ffffff; color: #000000; padding: 5px; }
+/* select, input{ background-color: #ffffff; color: #000000; } */
+
+td.pme-key-0, td.pme-key-1, td.pme-key-0-right-justify ,td.pme-key-1-right-justify{ width: 200px; }
+
+td.pme-key-0, td.pme-value-0, td.pme-key-1, td.pme-value-1, td.pme-key-0-right-justify, td.pme-help-0-right-justify, tr { vertical-align: middle; }

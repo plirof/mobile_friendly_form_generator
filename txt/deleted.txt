@@ -1,0 +1,90 @@
+When creating tables, consider creating an indexed field named 'deleted'.
+
+  `deleted` enum('0','1') NOT NULL DEFAULT '0',
+
+This facilitates flagging records as deleted, via a trigger, instead of actually deleting records.
+
+In a multi-user environment, using a `deleted` field will sometimes prevent disaster.
+
+A utility such as phpMyAdmin can subsequently be utilized to reactivate "deleted" records.
+
+Test thoroughly before implementing on a wide scale.
+
+For List mode, allow the display of records whose `deleted` value is 0.
+
+   $opts['filters'] = 'deleted = "0"';
+
+The generated field array for 'deleted' should be commented out, and resemble:
+
+/*
+   $opts['fdd']['deleted'] = array(
+      'default' => '0',
+      'input' => '',
+      'name' => 'Deleted',
+      'options' => '',
+      'required' => true,
+      'select' => 'T',
+      'size|ACP' => 1,
+      'sort' => true
+   );
+*/
+
+Conditionally apply an overwrite since the above array has been removed or commented out:
+
+if(isset($_REQUEST['PME_sys_moreadd']) && $_REQUEST['PME_sys_moreadd'] == 'More'){
+
+	$opts['cgi']['overwrite']['deleted'] = '0';
+
+}elseif(isset($_REQUEST['PME_sys_operation'])){
+
+	if($_REQUEST['PME_sys_operation'] == 'Add' || $_REQUEST['PME_sys_operation'] == 'PME_op_Copy'){
+
+		$opts['cgi']['overwrite']['deleted'] = '0';
+
+	}
+
+}
+
+Add a trigger:
+
+   $opts['triggers']['delete']['before'] = 'inc/triggers/mark_as_deleted.TDB.inc';
+
+Contents of the trigger file might read as follows:
+
+// Greater security in case there exist any oversights in a Log In process
+// if($this->tb == 'vs_users'){
+// 	$query2 = sprintf('UPDATE %s SET `deleted` = "1", hidden="1" WHERE `%s` = "%s" LIMIT 1', $this->tb, $this->key, $this->rec);
+// }else{
+// 	$query2 = sprintf('UPDATE %s SET `deleted` = "1" WHERE `%s` = "%s" LIMIT 1', $this->tb, $this->key, $this->rec);
+// }
+
+if($this->MyQuery($query2)){
+
+	// Emulate the change_log function, saving a copy of the record flagged as deleted
+
+	if($this->logtable){
+
+		$query3 = sprintf('INSERT INTO %s' .' (updated, user, host, operation, tab, rowkey, col, oldval, newval)' .' VALUES (NOW(), "%s", "%s", "delete", "%s", "%s", "%s", "%s", "")',
+
+			$this->logtable, addslashes($this->get_server_var('REMOTE_USER')),
+
+			addslashes($this->get_server_var('REMOTE_ADDR')), addslashes($this->tb),
+
+			addslashes($this->rec), addslashes($key), addslashes(serialize($oldvals)));
+
+		$this->myquery($query3, __LINE__);
+
+	}
+
+	return false;
+
+}else{
+
+	abort('Error in trigger file ('.__FILE__.') used to flag a record as deleted: '.mysqli_error($this->dbh));
+
+}
+
+When properly implemented, users will think the Delete button deletes records, 
+when in fact records are merely flagged as deleted and suppressed in List mode.
+
+

@@ -1,0 +1,60 @@
+// BLOB / TEXT column
+
+// Does not work if:
+//   The field contains HTML markup
+//   'strip_tags|LF' => true
+//   'trimlen|LF'    => 0
+
+$opts['fdd']['comments'] = array(
+  'default'    => '',
+  'escape'     => false, // required for DIV tag to work
+  'input'      => '',
+  'maxlen'     => 65535,
+  'name'       => 'Comments',
+  'options'    => 'ACPVDFL',
+  'required'   => false,
+  'select'     => 'T',
+  'sort'       => false,
+  'sql|LF' => 'if(comments > "",
+    CONCAT("<div style=\"border:1px solid #ff0000;height:100px;overflow:auto;\">",
+      comments,
+        "</div>"),
+          "")',
+  'sqlw'       => 'TRIM("$val_as")',
+  'textarea'   => array('rows' => '20', 'cols' => '150')
+);
+
+
+################################################################################
+
+
+$opts['fdd']['content'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 65535,
+  'name'       => 'CONTENT',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+
+  // If `content` does not contain HTML markup, then the
+  // following may create a basic DIV scroller in
+  // List/Filter modes
+
+
+  'strip_tags|LF' => false,
+
+  'escape'        => false,
+
+  'sql|LF' => 'if(content > "",
+    CONCAT("<div style=\"border:1px solid #ff0000;height:100px;overflow:auto;\">",
+      content,
+        "</div>"),
+          "")',
+
+  'strip_tags|FL' => false,
+  'sqlw'       => 'TRIM("$val_as")',
+  'textarea'   => array('rows' => '20', 'cols' => '78'),
+  'sort'       => false
+);
+
+

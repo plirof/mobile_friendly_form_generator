@@ -1,0 +1,286 @@
+// 2012-03-02 09:08
+
+// Crude example of creating FancyBox links using data from `uploaded_files`
+
+// Objective: display thumbnails for FancyBox page using minimal data
+// stored in the following table. Optionally display using a TABLE
+// or free flowing in a DIV tag.
+
+// Left-over code from a discontinued Search feature is commented out below.
+
+/*
+
+An example of a script used to manage uploaded files.
+Data relevant to the upload was stored in the table `uploaded_files`
+
+CREATE TABLE IF NOT EXISTS `uploaded_files` (
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `mime_type` char(255) NOT NULL COMMENT 'useful if also recording data on non-image files',
+  `dir` char(255) NOT NULL DEFAULT '' COMMENT 'directory in which files are stored',
+  `filename` char(255) NOT NULL DEFAULT '' COMMENT 'filename',
+  `wh` char(255) NOT NULL DEFAULT '' COMMENT 'width and height spec determined using getimagesize()',
+  `text_1` char(255) NOT NULL DEFAULT '' COMMENT 'text for ALT or TITLE parameters',
+  `page_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'page ID in the content management system',
+  `user_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'the ID of the logged-in user who uploaded the file',
+  `position` smallint(5) unsigned NOT NULL DEFAULT '20' COMMENT 'sort field (increment by 20-50)',
+  `hidden` enum('0','1') NOT NULL DEFAULT '0' COMMENT 'facilitate suppressing the display of individual items',
+  `deleted` enum('0','1') NOT NULL DEFAULT '0' COMMENT 'facilitate flagging as deleted instead of actually deleting records',
+  `upld_date` date NOT NULL DEFAULT '0000-00-00',
+  `upld_time` time NOT NULL DEFAULT '00:00:00',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_page_id` (`page_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_position` (`position`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+*/
+
+
+$admin_s = 53;
+
+$num_cols = 4; // Number of columns of thumbnails
+
+$spacer_row_between_thumb = false;
+
+$table_usage = true;
+
+$title_below_thumb = true;
+
+$url_below_thumb = false;
+
+$opts['db'] = 'douglash_2011';
+
+$opts['tb'] = 'vs_fancyapps';
+
+$opts['dbh'] = $cfg['server'][0]['link'];
+
+$opts['prefs']['date_fmt'] = 'SQL'; // SQL (yyyy-mm-dd), Euro (dd-mm-yyyy), or US (mm-dd-yyyy)
+
+// The $rs array sets up paging links (Next/Previous)
+
+$rs = array();
+
+$rs['qs'] = ''; // query string for Next/Previous links
+
+$rs['offset'] = 8; // Maximum number of thumbnails to be displayed before pagination links are created
+
+$rs['dir'] = (string) get_cgi_var('dir'); // SQL direction
+
+$rs['limit'] = (int) get_cgi_var('limit'); // SQL limit
+
+$rs['order'] = (string) get_cgi_var('order'); // SQL order
+
+$rs['rs'] = (int) get_cgi_var('rs'); // SQL row start
+
+if(empty($rs['dir'])){ $rs['dir'] = 'ASC'; }
+
+if(empty($rs['limit'])){ $rs['limit'] = $rs['offset']; }
+
+if(empty($rs['order'])){ $rs['order'] = 'position'; }
+
+if(empty($rs['rs'])){ $rs['rs'] = 0; }
+
+if($rs['dir'] != 'ASC' && $rs['dir'] != 'DESC'){ $rs['dir'] = 'ASC'; }
+
+$sf = isset($_REQUEST['sf']) ? $_REQUEST['sf'] : ''; // $sf array used for search filter values
+
+$where = 'WHERE `mime_type` = "image/jpeg" AND `page_id` = '.$s.' AND `hidden` = "0" AND `deleted` = "0"';
+
+$qry = sprintf('SELECT `id`, `dir`, `filename`, `wh`, `text_1`, `position` FROM `%s`.`%s` '.$where, $opts['db'], $opts['tb']);
+
+$sql = sprintf('SELECT COUNT(`id`) FROM `%s` . `%s` '.$where, $opts['db'], $opts['tb']);
+
+/*
+if(isset($_REQUEST['sf']) && !empty($_REQUEST['sf'])){
+	// Search conducted by the user
+	$parts = '';
+	foreach($_REQUEST['sf'] as $key => $val){
+		if($val != ''){
+			$val = stripslashes(trim(strip_tags($val)));
+			if($key == 'upld_date' && $opts['prefs']['date_fmt'] != 'SQL'){ $val = date_to_sql($_REQUEST['sf']['upld_date'], $opts['prefs']['date_fmt']);}
+			$parts .= $val != '' ? $key.' LIKE "%'.$val.'%" AND ' : '';
+		}
+		$rs['qs'] .= '&amp;sf['.$key.']='.urlencode($val);
+	}
+	if(!empty($parts)){
+		$qry .= ' AND '.substr($parts, 0, -5);
+		$sql .= ' AND '.substr($parts, 0, -5);
+	}
+}
+ */
+
+$qry .= ' ORDER BY '.$rs['order'].' '.$rs['dir'].' LIMIT '.$rs['rs'].', '.$rs['limit'];
+
+/*
+if(!empty($parts)){
+
+	$res = mysqli_query($cfg['server'][$sn]['link'], $sql);
+
+	$rs['num_recs'] = mysqli_num_rows($res);
+
+	$found = mysqli_fetch_assoc($res);
+
+	$rs['num_recs'] = $found['COUNT(`id`)'];
+
+}else{
+ */
+
+	$res = mysqli_query($cfg['server'][$sn]['link'], sprintf('SELECT COUNT(*) FROM `%s` . `%s` '.$where, $opts['db'], $opts['tb']));
+
+	$found = mysqli_fetch_assoc($res);
+
+	$rs['num_recs'] = $found['COUNT(*)'];
+
+/*
+}
+ */
+
+if(!$res = mysqli_query($cfg['server'][$sn]['link'], $qry)){
+
+	echo "\n".'<p class="forms-error">Images for this gallery cannot be located.<!-- 1 --></p>';
+
+}else{
+
+	$thumbnails_retrieved = mysqli_num_rows($res);
+
+	$rs['page_count'] = intval($rs['num_recs'] / $rs['limit']);
+
+	if(empty($thumbnails_retrieved)){
+
+		if($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+			echo "\n".'<p><a href="javascript:history.go(-1)" onmouseover="self.status=document.referrer;return true" title="Go Back" rel="nofollow" class="forms"><img src="images/go-previous.png" width="16" height="16" border="0" class="nav" alt="Previous Record"></a> No records matched the Search term. </p>';
+
+		}else{
+
+			echo "\n".'<p>Images for this gallery cannot be located.<!-- 2 --></p>';
+
+		}
+
+	}else{
+
+		$cell_count = 0; // 1234
+
+		$column_counter = 0;
+
+		$processed = 0;
+
+		$rows_required = ceil($thumbnails_retrieved / $num_cols);
+
+		$cells_required = $rows_required * $num_cols;
+
+		$orphans = $cells_required - $thumbnails_retrieved;
+
+		echo "\n".'<!-- $rs[num_recs] = '.$rs['num_recs'].' thumbnails available -->';
+
+		echo "\n".'<!-- $thumbnails_retrieved = '.$thumbnails_retrieved.' -->';
+
+		echo "\n".'<!-- $rows_required = '.$rows_required.' -->';
+
+
+		echo "\n".'<!-- $orphans = '.$orphans.' -->';
+
+
+
+
+		if(isset($_SESSION['sess_user_email']) && $_SESSION['sess_user_level'] >= 200){
+
+			echo $table_usage ? "\n".'<!-- $rs[num_recs] '.$rs['num_recs'].', $rows_required '.$rows_required.', $orphans '.$orphans.' -->' : '';
+
+		}
+
+		// echo "\n".'<p>'.htmlspecialchars($qry).'</p>';
+
+		echo $table_usage ? "\n\n".'<table align="center" class="thumb">' : "\n".'<div class="ctr">';
+
+		while($ary = mysqli_fetch_assoc($res)){
+			foreach($ary as $key => $val){
+				$$key = stripslashes(trim($val));
+			}
+			if(empty($cell_count)){
+				echo $table_usage ? "\n".'<tr class="thumb">' : '';
+				$column_counter = 0;
+			}
+			echo $table_usage ? "\n".'<td class="thumb-'.$column_counter.'">' : '';
+			echo "\n".'<a class="fancybox-effects-c" data-fancybox-group="gallery" href="'.$cfg['abs_url'].substr($dir, 0, -2).$filename.'" title="'.htmlentities($text_1).'"><img src="'.$cfg['abs_url'].$dir.'/'.$filename.'" border="0" '.$wh.' alt="'.htmlspecialchars($text_1).'"></a>';
+			if($title_below_thumb && !empty($text_1)){
+				echo $table_usage ?  "\n".'<div class="text-below-thumb">'.htmlentities($text_1).'</div>' : '';
+			}
+			if(isset($_SESSION['sess_user_email']) && $_SESSION['sess_user_level'] >= 200){
+				echo "\n".'<div class="text-below-thumb">#'.$position.' <a href="'.$cfg['abs_url'].$cfg['self'].'?s='.$admin_s.'&amp;PME_sys_fl=1&amp;PME_sys_fm=0&amp;PME_sys_sfn[0]=0&amp;PME_sys_operation=PME_op_Change&amp;PME_sys_rec='.$id.'" target="_blank" style="font-size:11px;">Edit</a></div>';
+			}
+			echo $table_usage ?  "\n".'</td>' : '';
+			$processed++;
+			$column_counter++;
+			if( ($processed % $num_cols) === 0 ){
+				echo $table_usage ?  "\n".'</tr>' : '';
+				$cell_count = 0; // reset (triggers the next TR tag)
+				if($spacer_row_between_thumb && $rs['num_recs'] != $processed){
+					echo $table_usage ?  "\n".'<tr><td class="empty-cell-in-spacer-row" colspan="'.($column_counter + ($column_counter - 1)).'">&nbsp;</td></tr>' : '';
+				}
+			}else{
+				$cell_count++;
+			}
+		}
+
+		mysqli_free_result($res);
+
+		if($table_usage){
+
+			if($orphans > 0){
+
+				echo "\n".'<!-- orphans = '.$orphans.' -->';
+
+				for($i = 0; $i < $orphans; $i++){
+
+					echo "\n".'<td class="orphan">&nbsp;</td>';
+
+					// echo ($i < ($orphans - 1)) ? "\n".'<td class="spacer">&nbsp;<!-- orphan spacer --></td>' : '';
+
+				}
+
+			}
+
+			// echo "\n".'</tr>';
+
+		}
+
+		if(!($processed % $num_cols) === 0){
+
+			echo $table_usage ?  "\n".'</tr>' : '';
+
+		}
+
+		echo $table_usage ?  "\n".'</table>'."\n" : "\n".'</div>'."\n";
+
+		// Calculate whether or not pagination should be applied: First / Prev / Next / Last
+
+		if($rs['num_recs'] >= $rs['limit']){
+
+			echo "\n".'<table align="center" border="0">'."\n".'<tr><td align="center">';
+
+			if($rs['num_recs'] % $rs['limit']){ $rs['page_count']++; }
+
+			$rs['page_num'] = (1 + ($rs['rs'] / $rs['limit']));
+
+			$rs['rs_calc'] = $rs['limit'] * ($rs['page_num'] - 1);
+
+			echo !empty($rs['rs_calc']) ? "\n".'<a title="First" href="'.$cfg['abs_url'].$cfg['self'].'?order='.$rs['order'].'&amp;dir='.$rs['dir'].'&amp;rs=0&amp;limit='.$rs['limit'].'&amp;offset='.$rs['offset'].'&amp;s='.$s.'"><img src="'.$cfg['abs_url'].'images/go-first.png" width="16" height="16" border="0" class="nav" alt="First Record"></a>' : "\n".'<img src="'.$cfg['abs_url'].'images/go-first-pale.png" width="16" height="16" border="0" class="nav" alt="">';
+
+			echo ($rs['rs'] - $rs['limit']) >= 0 ? "\n".'<a title="Previous" href="'.$cfg['abs_url'].$cfg['self'].'?order='.$rs['order'].'&amp;dir='.$rs['dir'].'&amp;rs='.($rs['rs']-$rs['limit']).'&amp;limit='.$rs['limit'].'&amp;offset='.$rs['offset'].'&amp;s='.$s.'" rel="prev"><img src="'.$cfg['abs_url'].'images/go-previous.png" width="16" height="16" border="0" class="nav" alt="Previous Record"></a>' :  "\n".'<img src="'.$cfg['abs_url'].'images/go-previous-pale.png" width="16" height="16" border="0" class="nav" alt="">';
+
+			echo ($rs['rs'] + $rs['limit']) < $rs['num_recs'] ? "\n".'<a title="Next" href="'.$cfg['abs_url'].$cfg['self'].'?order='.$rs['order'].'&amp;dir='.$rs['dir'].'&amp;rs='.($rs['rs']+$rs['limit']).'&amp;limit='.$rs['limit'].'&amp;offset='.$rs['offset'].'&amp;s='.$s.'" rel="next"><img src="'.$cfg['abs_url'].'images/go-next.png" width="16" height="16" border="0" class="nav" alt="Next Record"></a>' : "\n".'<img src="'.$cfg['abs_url'].'images/go-next-pale.png" width="16" height="16" border="0" class="nav" alt="">';
+
+			echo $rs['page_count'] !=  $rs['page_num'] ? "\n".'<a title="Last" href="'.$cfg['abs_url'].$cfg['self'].'?order='.$rs['order'].'&amp;dir='.$rs['dir'].'&amp;rs='.(($rs['page_count'] * $rs['offset']) - $rs['offset']).'&amp;limit='.$rs['limit'].'&amp;offset='.$rs['offset'].'&amp;s='.$s.'"><img src="'.$cfg['abs_url'].'images/go-last.png" width="16" height="16" border="0" class="nav" alt="Last Record"></a>' : "\n".'<img src="'.$cfg['abs_url'].'images/go-last-pale.png" width="16" height="16" border="0" class="nav" alt="">';
+
+			echo "\n".'<br><small>'.number_format($rs['num_recs']).' images available<br>Displaying page '.$rs['page_num'].' of '.$rs['page_count'].'</small>';
+
+			echo "\n".'</td></tr></table>';
+
+		}
+
+	}
+
+}
+
+

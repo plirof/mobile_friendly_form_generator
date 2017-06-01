@@ -1,0 +1,64 @@
+Misc. example of specialized footer include file
+
+See end of post if using multiple clickable filters in page footer
+http://opensource.platon.sk/forum/projects/viewtopic.php?t=960&postdays=0&postorder=asc&highlight=opts%20cgi%20persist%20array%20fl2%20fl2&start=15
+$opts['cgi']['persist'] = array( 'fl2' => $fl2, 'fl3' => $fl3, 'fl4' => $fl4 );
+
+
+
+Example of using single clickable filter follows
+
+
+// Page header
+
+if($opts['tb'] == 'TABLE'){
+
+   $fl2 = array_key_exists('fl2', @$_REQUEST) ? get_magic_quotes_gpc() == 1 ? trim(stripslashes(strip_tags(@$_REQUEST['fl2']))) : trim(strip_tags(@$_REQUEST['fl2'])) : '';
+
+   if($fl2 != '') {
+
+      $opts['cgi']['persist'] = array('fl2' => $fl2);
+
+      $opts['filters'] = "PMEtable0.COL3 = '0' AND COL1 = '$fl2'";
+
+      echo "\n".'<p style="margin:5px 0px 5px 8px;color:#336699">Filter: COL1 '.$fl2.'</p>';
+
+   }else{
+
+      $opts['filters'] = 'PMEtable0.COL3 = "0"';
+
+   }
+
+}
+
+
+// phpMyEdit form...
+
+
+// page footer
+
+if($operation == $opts['mfg_label_list_rec']){
+
+   // If "List Records" mode, query the table for a couple fields for use in creating a clickable filter
+
+   if($res = @mysql_query("SELECT COL1, link FROM ".$opts['tb']." WHERE COL2 = '0' AND COL3 = '0' AND hidden = '0' ORDER BY COL1")){
+
+      while($ary = @mysql_fetch_assoc($res)) {
+
+         while(list($key,$val) = each($ary)) {
+
+            $$key = htmlspecialchars(stripslashes(trim($val)));
+
+         }
+
+         echo $COL1 != $fl2 ? "\n".'<a class="ftr" href="'.basename($_SERVER['PHP_SELF']).'?fl2='.$COL1.'">'.$COL1.' - '.$link.'</a><br>' : '<span style="color:#336699;background-color:transparent">'.$COL1.' - '.$link.'</span><br>';
+
+      }
+
+      echo $fl2 > 0 ? "\n".'<a class="ftr" href="'.basename($_SERVER['PHP_SELF']).'">Clear</a>' : '';
+
+   }
+
+}
+
+

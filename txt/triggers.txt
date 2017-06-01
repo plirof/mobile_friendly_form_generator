@@ -1,0 +1,628 @@
+Triggers facilitate executing all sorts events, most commonly the validation of user input.
+
+If the trigger procedure fails to pass the prescribed test, abort processing and instruct the user to Go Back.
+
+Basic Javascript validation of user input can be easily configured, though at times a PHP trigger is better solution.
+
+See the Trigger documentation at
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.triggers.html
+
+Also, use the Forum's search feature to search for "trigger" or "triggers"
+http://opensource.platon.sk/forum/projects/?c=5
+
+Trigger Documentation: http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.triggers.html
+
+Select triggers - View form is related to 'select' operation.
+
+$opts['triggers']['select']['cancel'] = 'inc/triggers/categories.TSC.inc'; // After canceling the view page
+$opts['triggers']['select']['pre']    = 'inc/triggers/categories.TSP.inc'; // Before displaying the view page
+
+Insert triggers - Add and Copy forms are related to 'insert' operation
+
+$opts['triggers']['insert']['after']  = 'inc/triggers/categories.TIA.inc'; // After requesting save or more in the add/copy page
+$opts['triggers']['insert']['before'] = 'inc/triggers/categories.TIB.inc'; // Before requesting save or more in the add/copy page
+$opts['triggers']['insert']['cancel'] = 'inc/triggers/categories.TIC.inc'; // After canceling the add/copy page
+$opts['triggers']['insert']['pre']    = 'inc/triggers/categories.TIP.inc'; // Before displaying the add/copy page
+
+Update triggers - Edit form is related to 'update' operation.
+
+$opts['triggers']['update']['after']  = 'inc/triggers/categories.TUA.inc'; // After requesting save or apply in the edit page
+$opts['triggers']['update']['before'] = 'inc/triggers/categories.TUB.inc'; // Before requesting save or apply in the edit page
+$opts['triggers']['update']['cancel'] = 'inc/triggers/categories.TUC.inc'; // After canceling the edit page
+$opts['triggers']['update']['pre']    = 'inc/triggers/categories.TUP.inc'; // Before displaying the edit page
+
+Delete triggers - Delete form is related to 'delete' operation.
+
+$opts['triggers']['delete']['after']  = 'inc/triggers/categories.TDA.inc'; // After requesting delete in the delete page
+$opts['triggers']['delete']['before'] = 'inc/triggers/categories.TDB.inc'; // Before requesting delete in the delete page
+$opts['triggers']['delete']['cancel'] = 'inc/triggers/categories.TDC.inc'; // After canceling the delete page
+$opts['triggers']['delete']['pre']    = 'inc/triggers/categories.TDP.inc'; // Before displaying the delete page
+
+---------------------------------------------------------------------
+
+Variables available within included triggers:
+
+$this	object reference
+$this->dbh	initialized MySQL database handle
+$this->key	primary key name
+$this->key_type	primary key type
+$this->key_delim	primary key deliminator
+$this->rec	primary key value (update and delete only)
+$this->tb	this table
+$newvals	associative array of new values (update and insert only)
+$oldvals	associative array of old values (update and delete only)
+$changed	array of keys with changed values
+
+There are also other variables available. For example every class property can be accessed using 
+$this object reference. All variables occur in 'before' triggers as well as in 'after' triggers. 
+
+Only class properties occurs in 'pre' and 'cancel' triggers currently.
+
+It is recommended to use the $this->myQuery() method in order to perform database
+queries for fetching additional data or doing inserts or updates to other database tables.
+
+---------------------------------------------------------------------
+
+Trigger example - conditionally populate values in other fields in the same table (an Address Book).
+
+If the field "email1" is not empty, populate "display_name" and "nick_name" fields
+using values found in either "first_name" and "last_name" or (if empty) then "company".
+
+if( !empty($newvals['email1']) ) {
+
+   if( !empty($newvals['first_name']) ) {
+
+      $newvals['display_name'] = ucwords( $newvals['first_name'].' '.$newvals['last_name'] );
+
+      $newvals['nick_name'] = ucwords( $newvals['first_name'].' '.$newvals['last_name'] );
+
+   } else if ( !empty($newvals['company']) ) {
+
+      $newvals['display_name'] = ucwords($newvals['company']);
+
+      $newvals['nick_name'] = ucwords($newvals['company']);
+
+   }
+
+}
+
+---------------------------------------------------------------------
+
+// Trigger file name: mark_as_deleted.TDB.inc
+
+// echo "\n".'<p class="forms-error">Script executed: '.__FILE__.'</p>';
+
+// test that a field named `deleted` exists in the table
+// and change the value of `deleted` from 0 to 1
+
+if(isset($oldvals['deleted'])){
+
+   $query2 = sprintf('UPDATE %s SET `deleted` = "1" WHERE `%s` = "%s" LIMIT 1', $this->tb, $this->key, $this->rec);
+
+   if($this->MyQuery($query2)){
+
+      // Emulate the change_log function, saving a copy of the record flagged as deleted
+      if($this->logtable){
+         $query3 = sprintf('INSERT INTO %s (updated, user, host, operation, tab, rowkey, col, oldval, newval) VALUES (NOW(), "%s", "%s", "delete", "%s", "%s", "%s", "%s", "")',
+            $this->logtable, addslashes($this->get_server_var('REMOTE_USER')), addslashes($this->get_server_var('REMOTE_ADDR')), addslashes($this->tb), addslashes($this->rec), addslashes($key), addslashes(serialize($oldvals)));
+         $this->myquery($query3, __LINE__);
+      }
+
+      return false;
+
+   }else{
+
+      // abort if the query fails
+
+      echo "\n".'<p>'.htmlspecialchars(mysql_error()).'</p>';
+
+      echo "\n".'<p><a href="javascript:history.go(-1)" onmouseover="self.status=document.referrer;return true">Go Back</a></p>';
+
+      exit;
+
+   }
+
+}
+
+---------------------------------------------------------------------
+
+// trigger to delete a file if the saved path and filename have been deleted
+// dir example: /public_html/uploads/images/tn
+// filename example: foo.jpg
+
+if($this->tb == 'my_table' && $_POST['PME_sys_savedelete'] == 'Delete'){
+
+   $qry = 'SELECT dir, filename FROM my_table WHERE upload_id = '.$_POST['PME_sys_rec'].' LIMIT 1';
+
+   // echo "\n".'<p>'.htmlentities($qry).'</p>';
+
+   if($row = mysql_fetch_row(mysql_query($qry))){
+
+      $tn = $row[0].'/'.$row[1];
+
+      // large image was saved with the same filename, 1 directory level above /tn/
+
+      $im = str_replace('/tn', '', $tn);
+
+      if(file_exists($tn)){
+
+         unlink($tn);
+
+         echo "\n".'<p>Deleting '.$tn.'</p>';
+
+      }
+
+      if(file_exists($im)){
+
+         unlink($im);
+
+         echo "\n".'<p>Deleting '.$im.'</p>';
+
+      }
+
+   }
+
+}
+
+---------------------------------------------------------------------
+
+foreach($newvals as $key => $val){
+
+  if($key == 'some_column_name') {
+
+    $newvals[$key] = strtoupper($newvals[$val]);
+
+  }
+
+}
+
+---------------------------------------------------------------------
+
+
+################################################################################
+
+/* 
+
+00:07 2012-08-05
+
+The client adds and updates links often, displayed using images.
+http://www.stevequayle.com/index.php?s=25
+
+After delete, insert, or update, create and save an HTML file which is included by the home page.
+
+File: bookmark_graphic.php 
+
+// called from the phpMyEdit script using
+$opts['triggers']['delete']['after']  = 'inc/triggers/bookmark_graphic.php'; // After requesting delete in the delete page
+$opts['triggers']['insert']['after']  = 'inc/triggers/bookmark_graphic.php'; // After requesting save or more in the add/copy page
+$opts['triggers']['update']['after']  = 'inc/triggers/bookmark_graphic.php'; // After requesting save or apply in the edit page
+
+
+Variables available within included triggers:
+$this             object reference
+$this->dbh        initialized MySQL database handle
+$this->key        primary key name
+$this->key_type   primary key type
+$this->key_delim  primary key deliminator
+$this->rec        primary key value (update and delete only)
+$newvals          associative array of new values (update and insert only)
+$oldvals          associative array of old values (update and delete only)
+$changed          array of keys with changed values
+
+ */
+
+function my_error_handler($data = null)
+{
+   // custom error handler
+   $ret = "\n".'<p class="forms-error">Trigger problem...</p><ul>';
+   if(is_array($data)){
+      foreach($data as $var){
+         $ret .= "\n".'<li class="forms-error">'.htmlentities($var).'</li>';
+      }
+   }else{
+      $ret .= "\n".'<li class="forms-error">';
+      $ret .= !empty($data) ? htmlentities($data) : 'An unknown error occurred.';
+      $ret .= '</li>';
+   }
+   $ret .= "\n".'</ul>';
+   echo $ret;
+   return false; // phpMyEdit expects this
+};
+
+function home_page_of_the_day($qry, $category, $limit)
+{
+   global $data, $queries;
+   $queries[] = $qry;
+   if($res = mysql_query($qry)){
+      $num_rows = mysql_num_rows($res);
+      if(empty($num_rows)){
+         my_error_handler('Graphic update error in home_page_of_the_day function: '.mysql_error());
+      }else{
+         while($ary = mysql_fetch_assoc($res)){
+            foreach($ary as $key => $val){
+               $$key = stripslashes(trim($val));
+            }
+            $data[] = $complete_url;
+         }
+         @mysql_free_result($res);
+         return($data);
+      }
+   }else{
+      my_error_handler('Graphic update error in home_page_of_the_day function: '.mysql_error());
+   }
+}
+
+$data = array();
+
+$queries = array();
+
+$category = 'Story of the Day';
+
+$limit = 4; // 4 stories of the day intended for graphic
+
+$select_statement = 'SELECT `complete_url` FROM `%s`.`%s` WHERE `category` = "%s" AND `hidden` = "0" AND `deleted` = "0" ORDER BY `id` DESC LIMIT %s';
+
+$qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+
+if($foo = home_page_of_the_day($qry2, $category, $limit)){
+
+   // Since the first query worked, it is assumed the following queries will also work
+
+   $limit = 1; // alter the LIMIT value
+
+   $category = 'Photo of the Day';
+   $qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+   $foo = home_page_of_the_day($qry2, $category, $limit);
+
+   $category = 'Quote of the Day';
+   $qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+   $foo = home_page_of_the_day($qry2, $category, $limit);
+
+   $category = 'Video of the Day';
+   $qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+   $foo = home_page_of_the_day($qry2, $category, $limit);
+
+   $category = 'Essay of the Day';
+   $qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+   $foo = home_page_of_the_day($qry2, $category, $limit);
+
+   $category = 'Scripture of the Day';
+   $qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+   $foo = home_page_of_the_day($qry2, $category, $limit);
+
+   $category = 'Prep Tip of the Week';
+   $qry2 = sprintf($select_statement, $opts['db'], $this->tb, $category, $limit);
+   $foo = home_page_of_the_day($qry2, $category, $limit);
+
+   $link_count = count($foo);
+
+   echo "\n".'<h3>Attempting to re-create HTML for the preferred home page graphic &quot;Of The Day&quot;</h3>';
+
+   // we should have exactly 10 image links
+
+   //$print_r_text = preg_replace('/\n/s', "\r\n", print_r($foo, true));
+
+   //echo !stristr($print_r_text, ']') ? '' : "\n".'<p>$foo</p><pre>'.htmlspecialchars($print_r_text).'</pre>';
+
+   // echo "\n".'<p>$link_count = '.$link_count.'</p>';
+
+   if($link_count <> 10){
+
+      my_error_handler('Graphic trigger $link_count should be exactly 10 - found '.$link_count);
+
+   }else{
+
+      // abort HTML creation, return false so that phpMyEdit can continue with normal List display
+
+######## do not indent the following HEREDOC_VAR
+
+$html = <<<HEREDOC_VAR
+<table width="300" border="0" align="center" cellpadding="0" cellspacing="0">
+<tr>
+<td><img src="imgs/btns-story_top.jpg" width="300" height="61" /><!-- story -->
+<table width="300" border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td><img src="imgs/btns-story_leftside.jpg" alt="" width="54" height="41" /></td>
+<td><a href="{$foo[0]}" target="_blank"><img src="imgs/btns-story_1.jpg" width="46" height="41" border="0" /></a></td>
+<td><a href="{$foo[1]}" target="_blank"><img src="imgs/btns-story_2.jpg" alt="" width="47" height="41" border="0" /></a></td>
+<td><a href="{$foo[2]}" target="_blank"><img src="imgs/btns-story_3.jpg" alt="" width="46" height="41" border="0" /></a></td>
+<td><a href="{$foo[3]}" target="_blank"><img src="imgs/btns-story_4.jpg" alt="" width="47" height="41" border="0" /></a></td>
+<td><img src="imgs/btns-story_rtside.jpg" alt="" width="60" height="41" /></td>
+</tr>
+</table>
+</td>
+</tr>
+<tr> <td><a href="{$foo[4]}" target="_blank"><img src="imgs/btnsMultis-_r3_c1.jpg" alt="" width="300" height="45" /></a></td><!-- photo --> </tr>
+<tr> <td><a href="{$foo[5]}" target="_blank"><img src="imgs/btnsMultis-_r4_c1.jpg" alt="" width="300" height="46" /></a></td><!-- quote --> </tr>
+<tr> <td><a href="{$foo[6]}" target="_blank"><img src="imgs/btnsMultis-_r5_c2.jpg" alt="" width="299" height="46" /></a></td><!-- video --> </tr>
+<tr> <td><a href="{$foo[7]}" target="_blank"><img src="imgs/btnsMultis-_r6_c2.jpg" width="299" height="46" /></a></td><!-- essay --> </tr>
+<tr> <td><a href="{$foo[8]}" target="_blank"><img src="imgs/btnsMultis-_r7_c1.jpg" alt="" width="300" height="40" /></a></td><!-- scripture --> </tr>
+<tr> <td><a href="{$foo[9]}" target="_blank"><img src="imgs/btnsMultis-_r8_c1.jpg" width="300" height="60" /></a></td><!-- prep tip --> </tr>
+</table>
+HEREDOC_VAR;
+
+      // echo "\n".'<br>'.nl2br(htmlspecialchars($html));
+
+      if(!file_put_contents('./inc/of_the_day_html.txt', $html)){
+
+         echo "\n".'<h1 class="red">Error writing HTML code for Home Page links of the day</h1><p class="red">'.'./inc/of_the_day_html.txt'.'</p>';
+
+      }else{
+
+         echo "\n".'<blockquote>Writing '.'./inc/of_the_day_html.txt'.'</blockquote>';
+
+         echo "\n".'<blockquote>Including '.'./inc/of_the_day_html.txt'.' below:</blockquote>';
+
+         require_once('./inc/of_the_day_html.txt');
+
+      }
+
+   }
+
+   return false;
+
+}else{
+
+   if(isset($php_errormsg) && !empty($php_errormsg)){
+
+      my_error_handler('Graphic trigger PHP Error: '.$php_errormsg);
+
+   }else{
+
+      my_error_handler('Graphic trigger error source: '.__FILE__);
+
+   }
+
+
+}
+
+
+################################################################################
+
+function trigger_error_handler($data = null)
+{
+	$ret = "\n".'<p class="forms-error">Trigger problem...</p><ul>';
+	if(is_array($data)){
+		foreach($data as $var){
+			$ret .= "\n".'<li class="forms-error">'.htmlentities($var).'</li>';
+		}
+	}else{
+		$ret .= "\n".'<li class="forms-error">';
+		$ret .= !empty($data) ? htmlentities($data) : 'An unknown error occurred.';
+		$ret .= '</li>';
+	}
+	$ret .= "\n".'</ul>';
+	echo $ret;
+	return false; // aborts phpMyEdit
+};
+
+
+################################################################################
+
+/**
+ * phpMyEdit trigger file (tested 2012-08-07).
+ * Purpose: Before adding a new record to the current table,
+ * check to see if a particular field value already exists.
+ * While normally an Add mode function, you may want to trigger this also for Change mode.
+ * If the value already exists, abort (do not INSERT the record).
+ * Instead, exit with a warning message, link to Go Back, echo valid HTML to close out the page, then exit.
+ * Or you might want to simply display a message and return to List mode using "return false;"
+ * Usage in the calling script:
+ * $opts['triggers']['insert']['before'] = 'inc/triggers/last_name_value_exists.php';
+ * $opts['triggers']['update']['before'] = 'inc/triggers/last_name_value_exists.php';
+ * Using a HEREDOC statement for a SQL query may avoid quoting errors.
+ * Do not indent HEREDOC statements.
+ * HEREDOC syntax: $newvals[last_name] without quotes is correct
+ *                 $newvals['last_name'] throws a T_ENCAPSED_AND_WHITESPACE error
+ * If any elements are named using a Reserved Word, surround each reserved word with backticks (`accessible`);
+ * Reserved Words can be found at http://dev.mysql.com/doc/refman/5.5/en/reserved-words.html
+ * 
+ **/
+
+$my_field = 'company';
+
+$deleted = 'AND `deleted` = "N"';
+
+$sql = <<<HEREDOC_VAR
+SELECT $this->key FROM $this->tb WHERE $my_field = "$newvals[$my_field]" $deleted
+HEREDOC_VAR;
+
+if(isset($newvals[$my_field]) && $newvals[$my_field] == ''){
+
+	// nothing entered for $my_field
+	// Consider displaying a validation warning, a link to Go Back, and then exiting.
+
+}elseif(isset($newvals[$my_field]) && $newvals[$my_field] != ''){
+
+	$check = $this->myquery($sql); 
+
+	$row = @mysql_fetch_row($check);
+
+	if(isset($row[0])){ 
+
+		echo "\n".'<h3 style="color:#ff0000;">Cannot add duplicate record!</h3>'; 
+		echo "\n".'<h3 style="color:#ff0000;">The `'.htmlentities($this->key).'` of the existing record is '.htmlentities($row[0]).' </h3>'; 
+		echo "\n".'<h3 style="color:#ff0000;">$newvals['.$my_field.'] = '.htmlentities($newvals[$my_field]).'</h3>'; 
+		// Users might not see the above when List mode returns. Comment out the return.
+		// return false; // display a message and return to List mode.
+		// Best to die and offer a link to go back.
+		echo "\n".'<p><a href="javascript:history.go(-1)" onmouseover="self.status=document.referrer;return true">Go Back</a></p>';
+		// Close the HTML document as necessary for your setup.
+		$opts['url']['images'] = './images/';
+		require_once('./inc/footer2.php');
+		exit;
+
+	}else{ 
+
+		echo "\n".'<h3 style="color:#008000;">Record added</h3>'; 
+
+		return true; 
+
+	}
+
+}
+
+################################################################################
+
+
+
+Forum post follows
+
+Source: http://opensource.platon.sk/projects/bug_view_advanced_page.php?f_bug_id=228
+
+/*
+
+validating user input with php
+
+JavaScript validation is satisfactory in most case.
+In some cases, it is not reliable or flexible enough.
+
+The reasons can be:
+- no js support in client browser
+- validadion requires access to database
+- you don't want users to see what the validation is
+so you need to use php validation, which is processed on the server.
+
+
+USAGE:
+
+1. place this file as trigger insert before and trigger update before
+
+$opts['triggers']['insert']['before'] = 'inc/triggers/table_validation.php';
+
+$opts['triggers']['update']['before'] = $opts['triggers']['insert']['before'];
+
+
+2. modify to your needs (within MODIFY tags)
+
+TODO:
+consult js-regexp usage with experts
+problems with 'help' vs 'help|A' vs 'help|AC' vs ...
+make bad fields red/bold/whatever (css or hard coded ? )
+
+AUTHOR:
+michal palenik
+uploaded to platon.sk on 10 april 2004
+
+*/
+
+
+$errors = false; // default, there is no error
+
+/*
+insert any php code that validates user input
+the result should be associative array $errors as
+'col_name' => 'error message', where col_name is as
+defined in $opts and 'error message' is anything
+that you want to display to do user if there is
+no error, leave $errors at its default value (false)
+*/
+
+// <MODIFY> HERE
+
+if(strlen($newvals['question']) < 10){
+   $errors['question'] = "Question must be at least 10 characters long";
+}
+
+// END </MODIFY>
+
+// double check for regexp from js validation
+
+for ($k = 0; $k < $this->num_fds; $k++) {
+   if (isset($this->fdd[$k]['js']['regexp'])) {
+      $value = $newvals[$this->fds[$k]];
+      if(!preg_match($this->fdd[$k]['js']['regexp'], $value)){
+         $errors[$this->fds[$k]] = $this->fdd[$k]['js']['hint'];
+      }
+   }
+}
+
+// if no error, continue
+
+if(!$errors) return true;
+
+// filling user input in all columns first
+
+foreach($newvals as $key => $value){
+
+   $this->fdd[$key]['default'] = $value;
+
+}
+
+// error handling could use a language label for "Problem:
+
+echo "\n".'<div style="background-color:#ffff00;color:#ff0000;padding:10px">';
+
+echo "\n".'<ol>';
+
+foreach($errors as $key => $val) {
+
+   $this->fdd[$key]['help'] = "\n".'<li>'.$val.' '.$this->fdd[$key]['help'].'</li>';
+
+}
+
+echo "\n".'</ol>';
+
+echo "\n".'</div>';
+
+// emulating moreadd/more button
+
+$this->operation = $this->labels['Add']; // language unspecific
+
+$this->recreate_fdd();
+
+$this->recreate_displayed();
+
+// stopping the insert proccess
+
+return false;
+
+-------------
+
+Forum Post
+http://opensource.platon.sk/forum/projects/viewtopic.php?p=314883#314883
+
+In a table I have a Column "RowOK".
+
+If RowOK is "1" (yes) then I want to set all other fields to
+"readonly" in this row, when the row is edited (updated).
+
+So the record can only be changed after "RowOK" is set back to "0" (No).
+
+Solution: pre update trigger
+
+$sql = 'SELECT RowOK FROM '.$DB_TABLE.' WHERE ID='.$this->rec;
+$res = mysql_query($sql) or die(mysql_error());
+$record = mysql_fetch_object($res);
+if($record->RowOK == 1){
+   $n = sizeof($this->fdn);
+   $x = $this->fdn['RowOK'];
+   for($i=0;$i<$n;$i++){
+      if($i != $x){ $this->fdd[$i]['input'].="R"; }
+   }
+}
+return true;
+
+----------
+
+// A MySQL TEXT column can hold UP TO 65,535 characters.
+// Test to make sure no more than that are posted.
+// If necessary, convert the column from TEXT to MEDIUMTEXT
+
+// Set 2 lines in the phpMyEdit script:
+$opts['triggers']['insert']['before'] = 'inc/triggers/check_text_length.php';
+$opts['triggers']['update']['before'] = 'inc/triggers/check_text_length.php';
+
+
+// Code for check_text_length.php follows:
+
+$num = strlen($newvals['content']);
+
+if($num > 65535){
+
+   unset($_POST);
+
+   abort('Content field length grateer than 65535 = '.number_format($num));
+
+}
+

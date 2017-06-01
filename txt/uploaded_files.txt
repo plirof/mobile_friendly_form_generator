@@ -1,0 +1,286 @@
+// 2012-03-02 09:08
+
+/*
+
+An example of a script used to manage uploaded files.
+Data relevant to the upload was stored in the table `uploaded_files`
+
+CREATE TABLE IF NOT EXISTS `uploaded_files` (
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `mime_type` char(255) NOT NULL COMMENT 'useful if also recording data on non-image files',
+  `dir` char(255) NOT NULL DEFAULT '' COMMENT 'directory in which files are stored',
+  `filename` char(255) NOT NULL DEFAULT '' COMMENT 'filename',
+  `wh` char(255) NOT NULL DEFAULT '' COMMENT 'width and height spec determined using getimagesize()',
+  `text_1` char(255) NOT NULL DEFAULT '' COMMENT 'text for ALT or TITLE parameters',
+  `page_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'page ID in the content management system',
+  `user_id` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'the ID of the logged-in user who uploaded the file',
+  `position` smallint(5) unsigned NOT NULL DEFAULT '20' COMMENT 'sort field (increment by 20-50)',
+  `hidden` enum('0','1') NOT NULL DEFAULT '0' COMMENT 'facilitate suppressing the display of individual items',
+  `deleted` enum('0','1') NOT NULL DEFAULT '0' COMMENT 'facilitate flagging as deleted instead of actually deleting records',
+  `upld_date` date NOT NULL DEFAULT '0000-00-00',
+  `upld_time` time NOT NULL DEFAULT '00:00:00',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_page_id` (`page_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_position` (`position`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+*/
+
+$opts['tb'] = 'uploaded_files';
+
+require_once('inc/config.php'); // additional phpMyEdit options
+
+$opts['sort_field'] = array('page_id','position');
+
+$opts['key'] = 'id';
+
+$opts['key_type'] = 'smallint';
+
+$opts['options'] = 'ACPVDFL';
+
+$opts['cgi']['persist'] = array('s' => $s, 'sn' => $sn);
+
+$opts['filters'] = 'PMEtable0.deleted = "0"';
+
+$opts['fdd']['id'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => 'R',
+  'name'       => 'ID',
+  'options'    => 'VCDFL',
+  'select'     => 'T',
+  'size'       => 5,
+  'sort'       => true
+);
+
+$opts['fdd']['virtual_field'] = array (
+   'name' => 'Thumbnail',
+   'sql|VLF' => 'if(mime_type = "image/jpeg", CONCAT("<a rel=\"example_group\" href=\"", REPLACE(dir, "/tn", "/"), filename, "\" title=\"", text_1, "\" target=\"_blank\"><img src=\"", dir, "/", filename, "\" ", " alt=\"\"></a>"), "")',
+   'options'  => 'VLF',
+   'input'  => 'R',
+   'escape' => false,
+   'sort'     => false
+);
+
+$opts['fdd']['mime_type'] = array(
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Mime Type',
+  'options'    => 'ACPVD',
+  'select'     => 'D',
+  'size'       => 100,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['mime_type']['js']['required'] = true;
+$opts['fdd']['mime_type']['js']['hint'] = 'An entry is required for Mime Type';
+
+$opts['fdd']['dir'] = array(
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Directory',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 100,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['dir']['js']['required'] = true;
+$opts['fdd']['dir']['js']['hint'] = 'An entry is required for Dir';
+
+$opts['fdd']['filename'] = array(
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Filename',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 100,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['filename']['js']['required'] = true;
+$opts['fdd']['filename']['js']['hint'] = 'An entry is required for Filename';
+
+$opts['fdd']['wh'] = array(
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Wh',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size'       => 100,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['wh']['js']['required'] = true;
+// $opts['fdd']['wh']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['wh']['js']['hint'] = 'An entry is required for Wh';
+
+$opts['fdd']['text_1'] = array(
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Text 1',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 100,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['text_1']['js']['required'] = true;
+// $opts['fdd']['text_1']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['text_1']['js']['hint'] = 'An entry is required for Text 1';
+
+$opts['fdd']['page_id'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 5,
+  'name'       => 'Page ID',
+  'options'    => 'ACPVDFL',
+  'select'     => 'D',
+  'size'       => 5,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['page_id']['js']['required'] = true;
+// $opts['fdd']['page_id']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['page_id']['js']['hint'] = 'An entry is required for Page Id';
+
+$opts['fdd']['user_id'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 5,
+  'name'       => 'User Id',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size'       => 5,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['user_id']['js']['required'] = true;
+// $opts['fdd']['user_id']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['user_id']['js']['hint'] = 'An entry is required for User Id';
+
+$opts['fdd']['position'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '20',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 5,
+  'name'       => 'Position',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 5,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['position']['js']['required'] = true;
+// $opts['fdd']['position']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['position']['js']['hint'] = 'An entry is required for Position';
+
+$opts['fdd']['hidden'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 1,
+  'name'       => 'Hidden',
+  'options'    => 'ACPVDFL',
+  'select'     => 'D',
+  'sqlw'       => 'TRIM("$val_as")',
+  'values2'    => array('0' => 'No', '1' => 'Yes'),
+  'sort'       => true
+);
+
+/*
+$opts['fdd']['deleted'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 1,
+  'name'       => 'Deleted',
+  'options'    => 'ACP',
+  'select'     => 'D',
+  'sqlw'       => 'TRIM("$val_as")',
+  'values2'    => array('0' => 'No', '1' => 'Yes'),
+  'sort'       => true
+);
+ */
+
+$opts['fdd']['upld_date'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 10,
+  'name'       => 'Upld Date' . ($date_picker_mode_status ? ' <a href="#" onclick="cal.select(document.forms[\'PME_sys_form\'].PME_data_upld_date, \'anchor11\', \'yyyy-MM-dd\'); return false;" name="anchor11" id="anchor11"><img src="./images/pme-calendar.png" width="16" height="16" border="0" alt="" class="calendar-icon"></a>' : ''),
+  'options'    => 'ACPVD',
+  'select'     => 'N',
+  'size'       => 10,
+  'sqlw'       => 'TRIM("$val_as")',
+//  'sql|VFL'     => 'if(deleted > "", CONCAT(DATE_FORMAT(deleted, "%a %b %e %Y")), "")',
+  'sort'       => true
+);
+// $opts['fdd']['upld_date']['js']['required'] = true;
+// $opts['fdd']['upld_date']['js']['regexp'] = '/^[1-2]{1}[0-9]{3}-[0-1]{1}[0-9]{1}-[0-3]{1}[0-9]{1}$/';
+// $opts['fdd']['upld_date']['js']['hint'] = 'An entry is required for Upld Date';
+
+$opts['fdd']['upld_time'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => '',
+  'maxlen'     => 8,
+  'name'       => 'Upld Time',
+  'options'    => 'ACPVD',
+  'select'     => 'N',
+  'size'       => 8,
+  'sqlw'       => 'TRIM("$val_as")',
+//  'sql|VFL'     => 'if(upld_date > "00:00:00", CONCAT(TIME_FORMAT(upld_date, "%h:%i %p")), "")',
+  'sort'       => true
+);
+// $opts['fdd']['upld_time']['js']['required'] = true;
+// $opts['fdd']['upld_time']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['upld_time']['js']['hint'] = 'An entry is required for Upld Time';
+
+// flags: on, update, CURRENT_TIMESTAMP
+
+$opts['fdd']['updated'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => '',
+  'input'      => 'R',
+  'maxlen'     => 19,
+  'name'       => 'Updated',
+  'options'    => 'VD',
+  'select'     => 'N',
+  'size'       => 19,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['updated']['js']['required'] = true;
+// $opts['fdd']['updated']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['updated']['js']['hint'] = 'An entry is required for Updated';
+
+require_once('./inc/pme/phpMyEdit.class.new.php'); // a tweaked version of the class file
+
+if(array_key_exists('PME_sys_moreadd', $_REQUEST) || (isset($_REQUEST['PME_sys_operation']) && $_REQUEST['PME_sys_operation'] == 'Add')){ $opts['cgi']['overwrite']['deleted'] = '0'; }
+
+new phpMyEdit($opts);
+
+

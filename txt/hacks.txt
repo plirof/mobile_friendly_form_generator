@@ -1,0 +1,125 @@
+[/inc/txt/hacks.txt]
+
+Hacks applied to the class file (/phpMyEdit.class.php) appear below.
+
+If a newer version of the class file is downloaded in the future, this
+provides a list of items to check and/or modify in the new class file.
+
+Adjustments to the MySQL connection in /phpMyEdit.class.php
+
+   Because some users may want to query MySQL in the page footer, the following
+   disconnect statement is commented out near line 3054:
+
+      // $this->sql_disconnect();
+
+   The db connection is instead closed in the page footer: /footer.php
+
+      @mysql_close();
+
+   Near line 2964, inside "function execute()" two UTF8 queries were added.
+
+   If not using UTF8, comment out 2 queries, or adjust them to meet your requirements.
+
+      // UTF8 connection.
+      if(!@mysql_query('SET NAMES UTF8')){ error(mysql_error()); }
+      if(!@mysql_query('SET COLLATION_CONNECTION=UTF8_GENERAL_CI')){ error(mysql_error()); }
+      // ISO-8859-2 connection
+      // if(!@mysql_query('SET NAMES LATIN2')){ error(mysql_error()); }
+      // if(!@mysql_query('SET COLLATION_CONNECTION=LATIN2_GENERAL_CI')){ error(mysql_error()); }
+      // WINDOWS-1250 connection
+      // if(!@mysql_query('SET NAMES CP1250')){ error(mysql_error()); }
+      // if(!@mysql_query('SET COLLATION_CONNECTION=CP1250_GENERAL_CI')){ error(mysql_error()); }
+
+---------------------------------------------------
+
+Altered function display_record_buttons($position) by adding a SPAN tag:
+<span class="mfg_page_mode_label"></span>
+
+Affects the label displayed above the form (Add, Change, Copy, etc.):
+
+   function display_record_buttons($position)
+   {
+      if (($but_str = $this->display_buttons($position)) === null)
+         return;
+      if ($position == 'down') {
+         if ($this->tabs_enabled()) $this->display_tab_labels('down');
+         echo '<!--<hr class="',$this->getCSSclass('hr', 'down'),'" size="1" /> -->',"\n";
+      }else{
+         echo '<span class="mfg_page_mode_label">'.$this->operation.'</span>'."\n";
+      }
+      [snip]
+
+---------------------------------------------------
+
+When setting INPUT size of the Filter / Search box have been modified.
+   Size and/or maxlength do not seem to be properly calculated. Forced INPUT size = 8
+   function filter_heading():
+   // $size = isset($this->fdd[$k]['size']) ? $this->fdd[$k]['size'] : ($maxlen < 30 ? min($maxlen, 8) : 12);
+   $size = 8;
+
+---------------------------------------------------
+
+Minor fixes included:
+
+   Typo fixed: oneypress / onkeypress (k added)
+
+   Typo fixed: $selecte2[] / $selected2[] (d added)
+
+   htmlspecialchars() applied to the function that displays navigation
+   INPUT button values of <, <<, >>, >
+
+   $escape was missing from one function: function htmlTextarea()
+   $escape = isset($this->fdd[$k]['escape']) ? $this->fdd[$k]['escape'] : true;
+
+   Commented out: all <hr> tags, after adding the parameter: size="1"
+
+   HTML tags changed: <h1> & <h4> converted to <h3>
+
+   MySQL error style changed to red font
+
+   Parameter added to most A HREF tags: rel="nofollow"
+
+   Removed many occurrences of: /* {{{ */
+
+---------------------------------------------------
+Applied a bug fix posted in the forum:
+http://opensource.platon.sk/forum/projects/viewtopic.php?t=11587&highlight=bug
+
+
+   /*
+    * Table Page Listing
+    */
+   function list_table()
+   {
+      if ($this->fm == '') {
+         $this->fm = 0;
+      }
+      $this->fm = $this->navfm;
+      if ($this->prev_operation()) {
+         $this->fm = $this->fm - $this->inc;
+         if ($this->fm < 0) {
+            $this->fm = 0;
+         }
+      }
+      if ($this->first_operation()) {
+         $this->fm = 0;
+      } // last operation must be performed below, after retrieving total_recs
+      if ($this->next_operation()) {
+         $this->fm += $this->inc;
+      }
+      $this->number_of_recs();
+      if ($this->last_operation() || $this->fm > $this->total_recs) { // if goto_text is badly set
+         $this->fm = (int)(($this->total_recs - 1)/$this->inc)*$this->inc;
+      }
+      // BUG FIX http://opensource.platon.sk/forum/projects/viewtopic.php?t=11587&highlight=bug
+      if ($this->first_operation()) {
+         $this->fm = 0;
+      }
+
+---------------------------------------------------
+
+re: /css/style.css
+
+style.css stylesheet contains image margin settings + span.mfg_page_mode_label
+
+style.css has TD padding at 3px or 5px.

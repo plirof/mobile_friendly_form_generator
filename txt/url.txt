@@ -1,0 +1,74 @@
+Domain names entered in a field (e.g. google.com) can be displayed as a link with various 'URL' options.
+
+$opts['fdd']['local_url'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Local Url',
+  'options'    => 'ACPVD',
+  'required'   => false,
+  'select'     => '',
+  'size|ACP'   => 60,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// MySQL column 18: string - varchar(255)
+
+$opts['fdd']['local_url']['URL']       = '$value';
+$opts['fdd']['local_url']['URLtarget'] = '_blank';
+$opts['fdd']['local_url']['URLdisp'] = 'local';
+
+
+$opts['fdd']['url'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'URL',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// MySQL column 1: string - varchar(50)
+
+$opts['fdd']['url']['URL']       = 'http://$value';
+$opts['fdd']['url']['URLtarget'] = '_blank';
+
+
+$opts['fdd']['email_name'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'Email Name',
+  'options'    => 'ACPVDFL',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// MySQL column 3: string - char(50)
+
+$opts['fdd']['email_name']['URL'] = 'mailto:$value';
+
+
+$opts['fdd']['logon_url'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Logon URL',
+  'options'    => 'XACPVD',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 60,
+  'sqlw'       => 'TRIM("$val_as")',
+  'tab|ACPV'    => 'LOGON URL',
+  'sort'       => true,
+  'escape'     => false,
+  'sql|LFV' => 'if(logon_url > "", CONCAT("<a href=\"", logon_url, "\" target=\"_blank\"", " title=\"", logon_url ,"\"", ">Go There</a>"), "")'
+);
+// MySQL column 24: string - varchar(255)
+
+

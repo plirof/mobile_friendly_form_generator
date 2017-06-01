@@ -1,0 +1,53 @@
+// On the fly, alter the number of records
+// displayed in List mode.
+// This was not thoroughly tested but probably works OK.
+
+$num_recs = array(10,20,30,40,50);
+
+if(array_key_exists('limit', $_REQUEST)){
+
+   $limit = intval($_REQUEST['limit']);
+
+}else{
+
+   $limit = 10;
+
+}
+
+$opts['cgi']['persist'] = array('limit' => $limit);
+
+$opts['inc'] = $limit;
+
+// uncomment to use links instead of SELECT box
+
+/*
+$buffer =  "\n".'<p>Records per page:<br>';
+foreach($num_recs as $n){
+   $buffer .=  "\n";
+   if($n == $limit){
+      $buffer .=  $limit.' | ';
+   }else{
+      $buffer .=  '<a href="'.basename($_SERVER['PHP_SELF']).'?limit='.$n.'">'.$n.'</a> | ';
+   }
+}
+$buffer = substr($buffer, 0, -3)."\n".'</p>';
+echo $buffer;
+ */
+
+// SELECT box
+
+$buffer =  "\n".'<form name="myform1" action="hello" id="hello">';
+$buffer .=  "\n".'<select name="mylinks1" onchange="window.location=document.myform1.mylinks1.options[document.myform1.mylinks1.selectedIndex].value">';
+$buffer .=  "\n".'<option value="">'.$limit.' records displayed</option>';
+foreach($num_recs as $n){
+   if((isset($limit) && $n == $limit) || (isset($_GET['limit']) && $n == $_GET['limit'])){
+      // no option
+   }else{
+      $buffer .=  "\n".'<option value="'.basename($_SERVER['PHP_SELF']).'?limit='.$n.'">'.$n.'</option>';
+   }
+}
+$buffer .= '</select>';
+$buffer .= '</form>';
+$buffer .= isset($limit) ? '<p>Debug: value of $limit = '.$limit.'</p>' : '';
+
+echo $buffer;

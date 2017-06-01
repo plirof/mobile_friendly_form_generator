@@ -1,0 +1,24 @@
+// To persist one of *your* variables in GET/POST 
+// query strings, specify a key and a value as an array.
+
+$opts['cgi']['persist'] = array('key' => $value);
+
+// Persist $pageid
+
+$opts['cgi']['persist'] = array('pageid' => $pageid);
+
+// Persist 3 variables: $a, $b, and $c:
+
+$opts['cgi']['persist'] = array('a' => $a, 'b' => $b, 'c' => $c);
+
+// If your user session ID is set as $_SESSION['user_id'] then
+
+if(!empty($_SESSION['user_id'])){
+
+   $opts['cgi']['persist'] = array('user_id' => $_SESSION['user_id']);
+
+}
+
+// Equivalent to the above, but using only 1 line.
+
+$opts['cgi']['persist'] = isset($_SESSION['user_id']) ? array('user_id' => $_SESSION['user_id']) : array();

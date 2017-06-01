@@ -1,0 +1,523 @@
+09 Aug 2012
+
+Dummy (virtual) fields can be named randomly: 
+
+	dummy_field_0, dummy_field_1, dummy2, dummy3, virtual1, virtual2
+
+Dummy fields can be created to display calculations, links, etc.
+
+One of the best examples for complex virtuals fields can be found at
+http://opensource.platon.sk/forum/projects/viewtopic.php?t=1046&highlight=virtual
+
+The 'input' option should generally be set to 'R'
+	'input'  => 'R'
+
+Suppress display in certain modes:
+   'options|ACPD' => 'H', // hidden in Add, Change, coPy, Delete
+	--or--
+   'options' => 'VDFL', // visible during View, Delete, Filter, List
+
+CSS postfix does not appear to create a special CSS class.
+   'postfix' => 'dummy1', // won't work
+
+Generally omit options: 'select' (and others to be determined)
+
+Search the Forum for related tips:
+	http://opensource.platon.sk/forum/projects/?c=5
+
+-----
+
+$opts['fdd']['dummy1'] = array (
+   'colattrs'     => 'style="color:#ff0000;background-color:#ffff00;font:bold 12px \'Trebuchet MS\',verdana,helvetica,arial,sans-serif;padding:10px;"',
+   'escape'       => false, // set false if displaying HTML markup using CONCAT; default is true
+   'input'        => 'R',
+   'name'         => 'I\'m a dummy',
+   'options|ACPD' => 'H',
+   'sort'         => false,
+   // 'sql'          => 'CONCAT("<b style=\"color:#ff0000;background-color:#ffff00;\">phpMyEdit is cool!</b>")'
+   'sql'          => 'CONCAT("phpMyEdit is cool!")'
+);
+
+-----
+
+// Pass the field named `primary_domain_name` in a link to another form such that
+// the passed `primary_domain_name` is used as a filter in the other form's List mode.
+
+$opts['fdd']['dummy2'] = array (
+   'name' => 'Edit',
+   'sql|VLF' => 'if(primary_domain_name <> "",
+      CONCAT("<a href=\"data.php?s=22&PME_sys_fl=1&PME_sys_fm=0&PME_sys_sfn[0]=1&PME_sys_qf1=", primary_domain_name, "\" target=\"_blank\">Edit</a>"),
+         "")',
+   'options'  => 'VLF',
+   'input'  => 'R',
+   'escape' => false,
+   'sort'     => false
+);
+
+-----
+
+$opts['fdd']['dummy2'] = array (
+   'name' => 'Thumbnail',
+   'sql|VLF' => 'if(category = "other",
+      CONCAT("<a href=\"", dir, "/", filename, "\" target=\"_blank\">link</a>"),
+         if(category = "thumb", CONCAT("<a rel=\"example_group\" href=\"", REPLACE(dir, "/tn", "/"), filename, "\" target=\"_blank\"><img src=\"", dir, "/", filename, "\" ", " alt=\"\" border=\"0\"></a><br><a href=\"fancybox.change.php?upld_id=", upld_id, "\">Replace</a>"), ""))',
+   'options'  => 'VLF',
+   'input'  => 'R',
+   'escape' => false,
+   'sort'     => false
+);
+
+-----
+
+$opts['fdd']['dummy1'] = array (
+   'name' => 'Thumbnail',
+   'sql|VLF' => 'if(category = "other",
+      CONCAT("<a href=\"", dir, "/", filename, "\" target=\"_blank\">link</a>"),
+         if(category = "thumb", CONCAT("<a rel=\"example_group\" href=\"", REPLACE(dir, "/tn", "/"), filename, "\" title=\"", long_description, "\" target=\"_blank\"><img src=\"", dir, "/", filename, "\" ", " alt=\"\"></a>"), ""))',
+   'options'  => 'VLF',
+   'input'  => 'R',
+   'escape' => false,
+   'sort'     => false
+);
+
+-----
+
+// `domain` is another field in this table
+
+$opts['fdd']['dummy1'] = array (
+   'input'   => 'R',
+   'name'    => 'Whois',
+   'sql'     => 'CONCAT("<a href=\"http://whois.domaintools.com/", domain, "\" target=\"_blank\">whois</a>")',
+   'options' => 'FL',
+   'escape'  => false,
+   'sort'    => true
+);
+
+-----
+
+$opts['fdd']['dummy2'] = array (
+   'input'   => 'R',
+   'name'    => 'Google',
+   'sql'     => 'CONCAT("<a href=\"http://www.google.com/\" target=\"_blank\">Google</a>")',
+   'options' => 'FL',
+   'escape'  => false,
+   'sort'    => true
+);
+
+-----
+
+// Look up last_name and first_name where both tables have a user/user_name field
+// Regular field with lookup
+
+$opts['fdd']['user'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 20,
+  'name'       => 'User Name',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'D',
+  'size|ACP'   => 20,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'     => array(
+    'table'       => 'vs_users',
+    'column'      => 'user_name',
+    'description' => array(
+       'columns'  => array('0' => 'last_name', '1' => 'first_name'),
+       'divs'     => array('0' => ', '),
+     ),
+    'filters'     => 'hidden = "0" AND deleted = "0"',
+    'orderby'     => 'last_name')
+);
+
+// Dummy/Virtual field looks up user level, displaying it in lighter color
+// PMEjoin1 was created above when looking up last_name and first_name
+
+$opts['fdd']['virtual_1'] = array(
+   'colattrs' => 'style="color:#999999;background-color:transparent"',
+   'input'    => 'VR',
+   'name'     => 'UL',
+   'options'  => 'LFV',
+   'sql'      => 'PMEjoin1.user_level'
+);
+
+
+-----
+
+// Create below the dummy /virtual field "dummy1"
+// which in View mode displays code for a database connection
+
+$opts['fdd']['mysql_db_name'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'MySQL DB',
+  'options'    => 'ACPVD',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 110,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+$opts['fdd']['mysql_username'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'MySQL User',
+  'options'    => 'ACPVD',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 110,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+$opts['fdd']['mysql_pwd'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'MySQL Pwd',
+  'options'    => 'ACPVD',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 110,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+// the following may have gotten corrupted:
+
+$opts['fdd']['dummy1'] = array (
+   'escape'  => false,
+   'name'    => 'db conn',
+   'options' => 'V',
+   'sort'    => false,
+   'sql'     => 'if(mysql_db_name <> "",
+      CONCAT(
+         "\$opts[\'db\'] = \'", mysql_db_name, "\';
+         \$opts[\'un\'] = \'", mysql_username, "\';
+         \$opts[\'pw\'] = \'", mysql_pwd, "\';
+         \$persistent = \'\';
+         if(\$persistent == (bool) @ini_get(\'allow_persistent\')){
+            if(!\$opts[\'dbh\'] = @mysql_pconnect(\$opts[\'hn\'], \$opts[\'un\'], \$opts[\'pw\'])){
+               die(mysql_error());
+            }
+         }else{
+            if(!\$opts[\'dbh\'] = @mysql_connect(\$opts[\'hn\'], \$opts[\'un\'], \$opts[\'pw\'])){
+               die(mysql_error());
+            }
+         }
+         if(!@mysql_select_db(\$opts[\'db\'], \$opts[\'dbh\'])) {
+            die(mysql_error());
+         }if(isset(\$opts[\'tb\']) && !\$table_exists = @mysql_query(\'SELECT 1 FROM `\'.\$opts[\'tb\'].\'` LIMIT 0\')){
+            die(mysql_error());
+         }if(!@mysql_query(\'SET NAMES UTF8\')){ die(mysql_error()); }
+         if(!@mysql_query(\'SET COLLATION_CONNECTION=UTF8_GENERAL_CI\')){ die(mysql_error()); }"
+      ),
+       "")'
+);
+
+
+-----
+
+
+$opts['fdd']['dummy1'] = array (
+   'input'   => 'R',
+   'name' => 'Stats',
+   'sql|lf' => 'if(host_name = "aqhost.com",
+      CONCAT("<a href=\"http://",
+         domain_name, ":2082/3rdparty/phpMyAdmin/index.php\" target=\"_blank\">pma</a><br><a href=\"http://", domain_name,
+            ":2082/frontend/AQHost/backup/index.html\" target=\"_blank\">backup</a><br><a href=\"http://",
+               domain_name,
+                  ":2082/frontend/AQHost/stats/index.html\" target=\"_blank\">stats</a><br><a href=\"http://",
+                     domain_name,
+                        ":2082/frontend/AQHost/cron/index.html\" target=\"_blank\">cron</a>"),
+                           "")',
+   'options'  => 'L',
+   'escape' => false,
+   'sort'     => false
+);
+
+
+-----
+
+$opts['fdd']['dummy']['sql'] = 'User1 + User2';
+
+-----
+
+$now = time();
+
+$opts['fdd']['dummy_field'] = array(
+   'input'   => 'R',
+  'css'        => array('postfix' => 'right-justify'),
+  'name'       => 'Days since last edit',
+  'mask'       =>  '%0.1f',
+  'options'    => 'L',
+  'sql'        => "($now - UNIX_TIMESTAMP(updated))/86400",
+);
+
+-----
+
+$opts['fdd']['dummy1'] = array (
+   'input'   => 'R',
+   'name'    => 'Dummy',
+   'sql'     => 'CONCAT(first_name, " ", last_name)',
+   'options' => 'VLF',
+   'escape'  => false,
+   'sort'    => true
+);
+
+-----
+
+$opts['fdd']['CurrentDate'] = array(
+  'name'     => 'Current Date',
+  'select'   => 'T',
+  'maxlen'   => 14,
+  'options'  => 'L',
+  'sql'    => 'CURDATE()',
+  'sort'     => true
+);
+
+-----
+
+
+3. Virtual field
+
+PME principle is : Each hash-entry of the $opts['fdd'] table in the 
+calling script is a field from the main table. But, in some case, 
+you may want to display something LIKE a field which isn't a field 
+in the main table (computed field, joined field, ...) That's why 
+we add the 'V' flag to 'input' option.
+
+4. custom join: Even for basic "table lookup", you may require to do 
+some custom join. this is the purpose of this. Custom join is required 
+when you use inside a virtual field because PME can't guess how to join. 
+(the joining "field" doesn't exist)
+
+5. sql feature. (See the documentation) It's especially useful for 
+virtual fields (else PME won't know what to display)
+
+6. your sample :
+
+See the sql script uploaded to see the model I used.
+
+$debug_query = true; //useful trick to know
+
+$opts['hn'] = 'localhost';
+$opts['un'] = 'root';
+$opts['pw'] = '';
+$opts['db'] = 'trip';
+$opts['tb'] = 'trips'; // main table
+
+$opts['key'] = 'tdyrefnum'; // Name of field which is the unique key
+$opts['options'] = 'ACPVDF';
+$opts['navigation'] = 'DUGB';
+
+$opts['fdd']['tdyrefnum'] = array( //'primary key' of 'trips'
+'name' => 'Tdyrefnum',
+'required' => true,
+'sort' => true
+);
+$opts['fdd']['label'] = array( //sample field of 'trips'
+'name' => 'Label',
+'maxlen' => 45,
+'required' => true,
+'sort' => true
+);
+
+//travellers' table part
+
+//do the join
+$opts['fdd']['join_to_travellers'] = array( //join_to_travellers or foo or dummy or...
+   'input' => 'VR', // ........ because field is V(irtual), it don't exist in the main table
+   'options' => '', //just do the join, don't display anything
+   'values' => Array( //API for currently making a join in PME.
+   'table' => 'travellers', //the joined table
+   'column' => 'idtraveller', //the joined key
+   'description' => 'idtraveller', //the joined value - here, it's only required to force the join
+   'join' => '$main_table.idtraveller = $join_table.idtraveller') //custom join because PME can't guess the joining field because it's virtual.
+);
+
+//sample of display of a field in the joined table
+
+$opts['fdd']['a_field_from_traveller'] = array(
+   'name' => 'FirstName',
+   'input' => 'VR',
+   'options' => 'LFV',
+   'sql' => 'PMEjoin2.label'
+   //joined table are aliased and numbered starting from 0 and using the field rank
+   // join to travellers is the field number 2 so the join performed is PMEjoin2
+);
+
+$opts['fdd']['join_to_requesters'] = array(
+   'input' => 'VR',
+   'options' => '',
+   'values' => Array(
+     'table' => 'tripsrequesters',
+     'column' => 'tdyrefnum',
+     'description' => 'tdyrefnum',
+     'join' => '$main_table.tdyrefnum = $join_table.tdyrefnum'
+   )
+);
+
+$opts['fdd']['a_field_from_tripsrequesters'] = array(
+   'name' => 'label from tripsrequester',
+   'input' => 'VR',
+   'options' => 'LFV',
+   'sql' => 'PMEjoin4.label'
+);
+
+$opts['fdd']['join_to_tripstravellers'] = array(
+   'input' => 'VR',
+   'options' => '',
+   'values' => Array(
+   'table' => 'tripstravellers',
+   'column' => 'tdyrefnum',
+   'description' => 'tdyrefnum',
+   'join' => '$main_table.tdyrefnum = $join_table.tdyrefnum')
+);
+
+$opts['fdd']['a_field_from_tripstravellers'] = array(
+   'name' => 'label from tripstraveller',
+   'input' => 'VR',
+   'options' => 'LFV',
+   'sql' => 'PMEjoin6.label'
+);
+
+// Now important call to phpMyEdit
+require_once 'phpMyEdit.class.php';
+new phpMyEdit($opts);
+
+
+------
+
+$opts['fdd']['dummy'] = array(
+  'input'   => 'R',
+  'name'     => 'Dummy',
+  'options'  => 'L',
+  'select'   => 'T',
+  'sql|L'    => 'some_other_column + 30',
+  'sort'     => true
+);
+
+------
+
+$opts['fdd']['dummy'] = array(
+  'input'   => 'R',
+  'options'  => 'L',
+  'name'     => 'Total',
+  'select'   => 'T',
+  'maxlen'   => 11,
+  'sql'      => 'field1 + field2',
+  'sort'     => true
+);
+
+-----
+
+$opts['fdd']['due_date'] = array(
+  'input'   => 'R',
+  'maxlen'     => 10,
+  'name'       => 'Due Date',
+  'options'    => 'L',
+  'select'     => 'T',
+  'sort'       => true
+);
+
+-----
+
+$opts['fdd']['dummy_column'] = array(
+  'input'   => 'R',
+  'maxlen'   => 14,
+  'name'     => 'Days Until',
+  'options'  => 'L',
+  'select'   => 'T',
+  'sort'     => true,
+  'sql'    => 'due_date - CURDATE()'
+);
+
+-----
+
+$opts['fdd']['dummy_field'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'input'     => 'R',
+  'name'     => 'Sec. Elapsed',
+  'options'  => 'VCFL',
+  'select'   => 'T',
+  'sort'     => false,
+  'sql' => 'if(unix_end > "0", round((unix_end - unix_start)/60), "-")'
+);
+
+-----
+
+$opts['fdd']['dummy_field2'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'input'     => 'R',
+  'name'     => 'Est. Hrs.',
+  'options'  => 'VCFL',
+  'select'   => 'T',
+  'sort'     => false,
+  'sql' => 'if(minutes_billed > "0", round(minutes_billed/60, 2), "-")'
+);
+
+-----
+
+$now = time();
+
+// updated field is TIMESTAMP column type
+
+$opts['fdd']['dummy_field'] = array(
+  'input'   => 'R',
+  'css'        => array('postfix' => 'right-justify'),
+  'name'       => 'Days since last edit',
+  'mask'       =>  '%0.1f',
+  'options'    => 'L',
+  'sql'        => "( $now - UNIX_TIMESTAMP(updated) ) / 86400",
+);
+
+
+-----
+
+http://opensource.platon.sk/forum/projects/viewtopic.php?t=961&highlight=lookup
+
+$opts['fdd']['client'] = array(
+  'name'     => 'Account Name',
+  'values'   => Array(
+     'table'       => 'client', // joined table
+     'column'      => 'id', // the joined key
+     'description' => 'ID'),
+  'join'     => '$main_table.billing = $join_table.client',
+  'options'  => 'LVD',
+  'maxlen'   => 1,
+  'sort'     => false,
+  'sql'      => 'PMEjoin2.client'
+);
+
+$opts['fdd']['virtual_1'] = array(
+  'colattrs' => 'align="center"',
+  'default'  => '0',
+  'maxlen'   => 11,
+  'name'     => 'Account Number',
+  'options'  => 'LACPVDR',
+  'select'   => 'T',
+  'sort'     => true,
+  'sql'      => 'PMEtable0.client'
+);
+
+-----
+
+// Custom link to edit (some, or all) fields in "record_id" using a new window.
+// Not exactly a popup, but using target="_blank" to launch a new window.
+
+$opts['fdd']['dummy1'] = array (
+   'input'   => 'R',
+   'name'    => 'Virtual field',
+   'sql'     => 'CONCAT("<a href=\"CopyOfOriginalScript.php?PME_sys_fl=1&PME_sys_fm=0&PME_sys_sfn[0]=2&PME_sys_operation=PME_op_Change&PME_sys_rec=", record_id, "\" target=\"_blank\">Edit in new window</a>")',
+   'options' => 'FL',
+   'escape'  => false,
+   'sort'    => true
+);
+
+
+

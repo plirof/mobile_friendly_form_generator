@@ -1,0 +1,453 @@
+// 2012-03-02 09:08 
+
+// Crude example of an image upload form.
+
+// db connection is mysqli (MySQL improved) and link already established prior to inclusion.
+
+// Requires on an upload class file found at http://www.verot.net/php_class_upload.htm
+
+function next_position_value($page_id){
+
+	global $cfg, $sn;
+
+	if($row = mysqli_fetch_array(mysqli_query($cfg['server'][$sn]['link'], 'SELECT MAX(`position`) AS `n` FROM `vs_fancyapps` WHERE `page_id` = '.$page_id))){
+
+		return ($row['n'] + 20);
+
+	}
+
+	return 0;
+
+};
+
+error_reporting(E_ALL);
+
+if(!isset($s)){
+
+	$s = 12; // page id in the content management system
+
+}
+
+$dir_temporary =  ini_get('upload_tmp_dir');
+
+$my_date = date('Y-m-d');
+
+$my_time = date('H:i:s');
+
+$user_id = isset($_SESSION['sess_user_id']) ? $_SESSION['sess_user_id'] : 0;
+
+$input_size = 35;
+
+$image_max_width = 1024; // huge images will be reduced to this pixel width
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+	require_once('upload.class.php');
+
+	if(!isset($_POST['step'])){
+
+		die('Step cannot be determined');
+
+	}elseif($_POST['step'] == 'thumb_and_image'){
+
+		$handle = new Upload($_FILES['image_field']);
+
+		if(!$handle->uploaded){
+
+			die($handle->error); // Upload failed
+
+		}else{
+
+			// The file has been uploaded properly to its *temporary* location.
+
+			// If errors arise, use the Clean process to delete temporary files.
+
+			// Process twice below: thumbnail + full size image (which may be reduced somewhat).
+
+			// The original filename may be slightly modified by the class file when creating a new filename.
+
+			// Thumbs are saved in a /tn/ below the folder containing the large image of the same name.
+
+			// Save minimal $info data (below) into MySQL and strip /tn when rendering FancyBox / FancyApps A HREF tags.
+
+			// Common display option(s)
+
+			$img_src_border = 1;
+
+			// THUMBNAIL PROCESSING OPTIONS
+
+			$dir_images = 'imgs/'.sprintf('%03d', $s);
+
+			$dir_thumbs = $dir_images.'/tn';
+
+			$handle->file_name_body_add    = null;
+
+			$handle->image_ratio           = true;
+
+			$handle->image_resize          = true;
+
+			$handle->image_x               = 200;
+
+			$handle->image_y               = 150;
+
+			### Begin validation ###
+
+			// Fields other than image_field
+
+			$text_1 = $_POST['text_1'];
+
+			// Test for unexpected events. Be prepared for anything!
+
+			// Die if not allowed image type based on $handle->file_src_name_ext;
+
+			$valid_image_extensions = array('bmp', 'gif', 'jpg', 'jpeg', 'png');
+
+			if($handle->file_src_name_ext == '' || !in_array(strtolower($handle->file_src_name_ext), $valid_image_extensions)){
+
+				$handle-> Clean(); // Delete temporary file(s)
+
+				die('Error, filename extension must be one of: '.implode(', ', $valid_image_extensions));
+
+			}
+
+			if($handle->image_src_x < $handle->image_x){
+
+				$handle-> Clean(); // Delete temporary file(s)
+
+				//riff raff in my hoo hoo
+
+				//require_once('../dBug.php');
+
+				//new dBug($GLOBALS);
+
+				die('The width of the uploaded image is only '.$handle->image_x.' pixels');
+
+			}
+
+			if($handle->image_src_y < $handle->image_y){
+
+				$handle-> Clean(); // Delete temporary file(s)
+
+				die('The height of the uploaded image is only '.$handle->image_y.' pixels');
+
+			}
+
+			### End validation ###
+
+			// If the uploaded file is not a JPG then convert it to JPG
+
+			if(strtolower($handle->file_src_name_ext) != 'jpg'){
+
+				$handle->image_convert = 'jpg';
+
+			}
+
+			// if(isset($handle->file_src_size)){
+
+				// $kb = round(($handle->file_src_size / 1024), 2);
+
+				// echo "\n".'<p>$handle->file_src_size '.$kb.' KB</p>';
+
+			// }
+
+			// Reset later for the full size image.
+
+			if($handle->image_src_x > $handle->image_src_y){
+
+				// landscape orientation
+
+				$handle->image_ratio_crop      = true; // handles diverse aspect ratios by zooming in
+
+			}else{
+
+				// portrait orientation
+
+				// $handle->image_ratio_crop = 'T'; // L,R,B,T (left, right, bottom, top)
+
+				// $handle->image_ratio_crop = true; // may clip off the top edge
+
+				// $handle->image_ratio_fill = true;
+
+				// Colin suggested
+
+				$handle->image_precrop         = '20% 0 0 0';
+
+				$handle->image_ratio_crop      = 'T';
+
+			}
+
+			$handle->Process($dir_thumbs); // Copy the uploaded file from its temporary location to the target folder.
+
+			if(!$handle->processed){
+
+				die($handle->error);
+
+			}else{
+
+				$info = getimagesize($handle->file_dst_pathname);
+
+				/*
+
+				Sample thumbnail $info Array includes MIME type which might be useful for sorting db records
+
+				(
+
+				    [0] => 200
+
+				    [1] => 150
+
+				    [2] => 2
+
+				    [3] => width="200" height="150"
+
+				    [bits] => 8
+
+				    [channels] => 3
+
+				    [mime] => image/jpeg
+
+				)
+
+				 */
+
+				if( isset($_POST['mysql_usage']) && $_POST['mysql_usage'] == 1){
+
+					$position = next_position_value($s);
+
+					if(empty($position)){
+
+						$position = 20;
+
+						echo "\n".'<p class="forms-error">Incremented position value could not be determined. Substituting '.$position.'.</p>';
+
+					}
+
+					$escaped = array();
+
+					$escaped['mime_type'] = mysqli_real_escape_string($cfg['server'][$sn]['link'], $info['mime']);
+
+					$escaped['dir']       = mysqli_real_escape_string($cfg['server'][$sn]['link'], $dir_thumbs);
+
+					$escaped['filename']  = mysqli_real_escape_string($cfg['server'][$sn]['link'], $handle->file_dst_name);
+
+					$escaped['wh']        = mysqli_real_escape_string($cfg['server'][$sn]['link'], $info[3]);
+
+					$escaped['text_1']    = mysqli_real_escape_string($cfg['server'][$sn]['link'], $text_1);
+
+###### do not indent
+
+$qry = <<<HEREDOC_VAR
+
+INSERT INTO `vs_fancyapps` (`id`, `mime_type`, `dir`, `filename`, `wh`, `text_1`, `page_id`, `user_id`, `position`, `hidden`, `deleted`, `upld_date`, `upld_time`, `updated`)
+
+VALUES ('', '{$escaped['mime_type']}', '{$escaped['dir']}', '{$escaped['filename']}', '{$escaped['wh']}', '{$escaped['text_1']}', {$s}, {$user_id}, {$position}, '0', '0', '{$my_date}', '{$my_time}', '{$my_date} {$my_time}');
+
+HEREDOC_VAR;
+
+###### do not indent
+
+					if(!$res = mysqli_query($cfg['server'][$sn]['link'], $qry)){
+
+						echo "\n".'<p class="forms-error">Error - '.htmlspecialchars(mysqli_error($cfg['server'][$sn]['link'])).'</p>';
+
+					}else{
+
+						if(isset($_POST['debug']) && $_POST['debug'] == '1'){
+
+							echo "\n".'<p>Executed:<blockquote>'.htmlspecialchars($qry).'</blockquote></p>';
+
+						}
+
+					}
+
+					unset($escaped);
+
+				}
+
+				// Display the uploaded image
+
+				$img_src_tag_relative_url 	= '<img src="'.$dir_thumbs.'/'.$handle->file_dst_name.'" border="'.$img_src_border.'" '.$info[3].' alt="'.htmlspecialchars($text_1).'">';
+
+				echo "\n".'<p>'.$img_src_tag_relative_url.'</p><p>'.htmlspecialchars($img_src_tag_relative_url).'</p>';
+
+				if(isset($_POST['debug']) && $_POST['debug'] == '1'){
+
+					echo "\n".'<p>File size: '.(round(filesize($handle->file_dst_pathname)/256)/4).' KB</p>';
+
+					echo "\n".'<p>Link to the uploaded file: <a href="'.$dir_thumbs.'/'.$handle->file_dst_name.'" target="_blank">'.$handle->file_dst_name.'</a></p>';
+
+				}
+
+			}
+
+			// LARGE IMAGE PROCESSING OPTIONS
+
+			$handle->file_name_body_add = null;
+
+			if(strtolower($handle->file_src_name_ext) != 'jpg'){
+
+				$handle->image_convert = 'jpg';
+
+			}
+
+			$handle->image_ratio_crop = false;
+
+			if($handle->image_src_x > $image_max_width){
+
+				$handle->image_resize = true;
+
+				$handle->image_ratio_y = true;
+
+				$handle->image_x = $image_max_width;
+
+			}else{
+
+				$handle->image_resize = false;
+
+			}
+
+			if(isset($_POST['overlay_usage']) && $_POST['overlay_usage'] == 'Yes'){
+
+				$handle->image_text = $_SERVER['HTTP_HOST'];
+
+				$handle->image_text_background = '#FFFFFF';
+
+				$handle->image_text_background_opacity = 50;
+
+				$handle->image_text_color = '#000000';
+
+				$handle->image_text_opacity = 80;
+
+				$handle->image_text_padding = 20;
+
+			}
+
+			$handle->Process($dir_images);
+
+			if(!$handle->processed){
+
+				die($handle->error);
+
+			}else{
+
+				$info = getimagesize($handle->file_dst_pathname);
+
+				// Display the uploaded image
+
+				$img_src_tag_relative_url 	= '<img src="'.$dir_images.'/'.$handle->file_dst_name.'" border="'.$img_src_border.'" '.$info[3].' alt="'.htmlspecialchars($text_1).'">';
+
+				echo "\n".'<p>'.$img_src_tag_relative_url.'</p><p>'.htmlspecialchars($img_src_tag_relative_url).'</p>';
+
+				if(isset($_POST['debug']) && $_POST['debug'] == '1'){
+
+					echo "\n".'<p>File size: '.(round(filesize($handle->file_dst_pathname)/256)/4).' KB</p>';
+
+					echo "\n".'<p>Link to the uploaded file: <a href="'.$dir_thumbs.'/'.$handle->file_dst_name.'" target="_blank">'.$handle->file_dst_name.'</a></p>';
+
+				}
+
+			}
+
+		}
+
+	} // end of image step
+
+	echo "\n".'<p><a href="'.basename($_SERVER['PHP_SELF']).'?s='.$s.'">upload another image</a></p>';
+
+	if(isset($handle)){
+
+		$handle-> Clean(); // Delete temporary file(s)
+
+	}
+
+	if(isset($_POST['debug']) && $_POST['debug'] == '1'){
+
+		if(isset($handle->log)) {
+
+			echo "\n".'<pre>'.$handle->log.'</pre><br>';
+
+		}
+
+	}
+
+}else{
+
+	// GET mode
+
+	$text_1 = ''; // alt/title parameters
+
+	//$text_2 = ''; // text displayed below the thumbnail
+
+	//$text_3 = ''; // URL for use with non-empty entries for Text 2
+
+	//$text_4 = ''; // alternate text to appear on the large image
+
+	//$text_5 = ''; // unique identifier (UPC code, stock number, etc.)
+
+	// require_once('your_fancybox_thumbnail_display_script.php');
+
+
+
+	<br><hr>
+
+	<p><b>Image Upload - thumbnail created automatically.</b></p>
+
+	<p>Text entries cannot consist of more than 255 characters.</p>
+
+	<p>Images wider than <?php echo number_format($image_max_width); ?> pixels will be automatically reduced to <?php echo number_format($image_max_width); ?> pixels.</p>
+
+	<form name="form1" enctype="multipart/form-data" method="POST" action="<?php echo basename($_SERVER['PHP_SELF']); ?>">
+
+	<table border="0" cellpadding="5" cellspacing="0" style="border:1px solid #336699;background-color:#f0f8ff;">
+
+		<tr>
+
+			<td>Text 1:</td>
+
+			<td><input type="text" name="text_1" size="<?php echo $input_size; ?>" maxlength="255" class="forms" value="<?php echo htmlspecialchars($text_1); ?>"></td>
+
+			<td>alt/title parameters</td>
+
+		</tr>
+
+		<tr>
+
+			<td>File:</td>
+
+			<td><input type="file" name="image_field" size="<?php echo ($input_size + 5); ?>" value=""></td>
+
+			<td>Click to browse</td>
+
+		</tr>
+
+		<tr>
+
+			<td>Watermark:</td>
+
+			<td><select name="overlay_usage"><option value="No">No</option><option value="Yes">Yes</option></select></td>
+
+			<td><?php echo $_SERVER['HTTP_HOST']; ?></td>
+
+		</tr>
+
+	</table>
+
+	<p><input type="submit" name="Submit" value="Upload Image"> &nbsp;&nbsp;
+
+	<input type="checkbox" name="debug" value="1"> Debug</p>
+
+	<input type="hidden" name="mysql_usage" value="1"><!-- set 1 to use MySQL -->
+
+	<input type="hidden" name="s" value="<?php echo $s; ?>">
+
+	<input type="hidden" name="step" value="thumb_and_image">
+
+	<input type="hidden" name="token" value="<?php echo $_SESSION['token']; ?>">
+
+	</form>
+
+	<br>
+
+
+};
+

@@ -1,0 +1,646 @@
+Generally speaking, it appears basic look-ups can be done without using JOIN, as long as the
+column names are not ambiguous (the same in both tables).
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.input-restrictions.html
+
+Consider creating a VIEW using phpMyAdmin if a complex query
+is involved but you don't need to edit data in the VIEW.
+
+################################################################################
+
+Post-initialized variables are sometimes easier to read:
+
+	$opts['fdd']['facility_id'] = array(
+	  'default'    => '',
+	  'help|ACP'      => 'Select Facility',
+	  'input'      => '',
+	  'maxlen'     => 3,
+	  'name'       => 'Facility',
+	  'options'    => 'ACPVDFL',
+	  'select'     => 'D',
+	  'size|ACP'   => 4,
+	  'sqlw'       => 'TRIM("$val_as")',
+	  'sort'       => true
+	);
+	$opts['fdd']['col_name']['values']['db']     = 'mydb'; // optional
+	$opts['fdd']['col_name']['values']['table']  = 'mytable';
+	$opts['fdd']['col_name']['values']['column'] = 'id';
+	$opts['fdd']['col_name']['values']['description']['columns'][0] = 'name_last';
+	$opts['fdd']['col_name']['values']['description']['divs'][0]    = ', ';
+	$opts['fdd']['col_name']['values']['description']['columns'][1] = 'name_first';
+	// $opts['fdd']['col_name']['values']['filters'] = 'id IN (1,2,3)'; // optional WHERE clause
+	$opts['fdd']['col_name']['values']['orderby'] = 'name_last,name_first'; // optional ORDER BY clause
+
+An example which is comparable to that appearing above:
+
+	$opts['fdd']['facility_id'] = array(
+	  'default'    => '',
+	  'help|ACP'      => 'Select Facility',
+	  'input'      => '',
+	  'maxlen'     => 3,
+	  'name'       => 'Facility',
+	  'options'    => 'ACPVDFL',
+	  'select'     => 'D',
+	  'size|ACP'   => 4,
+	  'sqlw'       => 'TRIM("$val_as")',
+	  'sort'       => true,
+	  'values'     => array(
+	    'table' => 'facilities',
+	    'column' => 'id',
+	    'description' => array(
+	      'columns' => array('0' => 'name_last', '1' => 'name_first'),
+         'divs' => array(', '),
+	      'orderby' => array('0' => 'name_last,name_first')
+	     )
+	   )
+	);
+
+################################################################################
+
+If the main column and the join look-up column share the same name, then references are ambiguos
+to MySQL and JOIN syntax is required.
+
+If you need to filter items in a second table in order to display them in a drop-down SELECT box,
+then you need to use the join syntax.
+
+You may find it easier to rename a column in the join table (and use the above lookup method)
+than to implement the join syntax). However if your overall application is complex, it may
+be impractical, or relatively impossible, to consider renaming a column.
+
+Searching the forum at platon.sk for $join_table, $main_table, or related syntax may
+lead you to additional examples of join syntax.
+http://opensource.platon.sk/forum/projects/?c=5
+
+
+-----
+
+If using JOIN to achieve filtered drop-down selectors,
+setting up variable names for the main table and column as
+well as the join options makes the code a bit more portable
+in terms of being able to copy it to other scripts and
+implement the join again, with minimal effort (reducing coding errors).
+
+/*
+CREATE TABLE IF NOT EXISTS `domain` (
+  `domain_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `domain` varchar(75) NOT NULL DEFAULT '',
+  `parked_on` varchar(255) NOT NULL DEFAULT '',
+  `host_name` varchar(50) NOT NULL DEFAULT '',
+  `owner_id` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`domain_id`),
+  KEY `domain` (`domain`),
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `contacts` (
+  `contact_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `last_name` varchar(20) NOT NULL DEFAULT '',
+  `first_name` varchar(20) NOT NULL DEFAULT '',
+  `email1` varchar(50) NOT NULL DEFAULT '',
+  `email2` varchar(50) NOT NULL DEFAULT '',
+  PRIMARY KEY (`contact_id`),
+  KEY `last_name` (`last_name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+*/
+
+$main_table = 'domain';
+
+$main_column = 'owner_id';
+
+$join_table = 'contacts';
+
+$join_column = 'contact_id';
+
+$join_description_1 = 'last_name';
+
+$join_description_2 = 'first_name';
+
+$opts['fdd'][$main_column] = array(
+  'default'    => '',
+  'input'      => '',
+  'name'       => 'Owner ID',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'D',
+  'size|ACP'   => 5,
+  'sort'       => true,
+  'sqlw'       => 'TRIM("$val_as")',
+  'values'     => array(
+    'join'        => '$main_table.$main_column = $join_table.$join_column', // single quotes, not ""
+    'table'       => $join_table,
+    'column'      => $join_column,
+    'description' => array(
+      'columns'   => array($join_description_1, $join_description_2), // last name, first name
+      'divs'      => array(' ') // optional divider/separator
+     ),
+    'filters'     => $join_description_1.' <> "" AND '.$join_description_2.' <> ""', // Add/Change drop down restriction
+    'orderby'     => $join_description_1.','.$join_description_2 // ORDER BY clause in Add/Change drop down
+  )
+);
+
+
+-----
+
+$join_table = 'mfg_authors'; // alias of the values table
+$join_column = 'id'; // join column in the values table
+$join_description = 'name'; // description column in the values table
+
+$main_table = 'mfg_articles'; // alias of the main table
+$main_column = 'author_id'; // join column in the main table
+
+$opts['fdd']['author_id'] = array(
+  'help|ACP'   => 'Limit 11 digits',
+  'input'      => '',
+  'maxlen'     => 11,
+  'name'       => 'Author ID',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 11,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values' => array(
+    'table'       => $join_table,
+    'column'      => $join_column,
+    'description' => $join_description,
+    'join'        => '$main_table.$main_column = $join_table.$join_column'
+  )
+);
+// Column type: int - int(11)
+
+-----
+
+Sometimes you want to restrict table joining on the output.
+
+This is important in case where ['values']['column'] is not unique in ['values']['table'].
+
+For this purpose, you can use:
+
+   $opts['fdd']['col_name']['values']['join'] option.
+
+These variables are available in this option:
+
+   $main_table = ''; // alias of the main table
+
+   $main_column = ''; // join column in the main table
+
+   $join_table = ''; // alias of the values table
+
+   $join_column = ''; // join column in the values table
+
+   $join_description = ''; // description column in the values table
+
+phpMyEdit will create by default
+
+   $main_table.$main_column = $join_table.$join_column
+
+join, what is sufficient the most cases. However you may
+extend it with additional conditions as well.
+
+Example 4-17. Table lookup with advanced joining
+
+$opts['fdd']['col_name']['values']['join']
+   = '$main_table.$main_column = $join_table.$join_column AND '
+   . '$main_table.another_col = $join_table.another_col';
+
+Please note that 'filters' is used for filtering items in dropdown
+during ADD/EDIT mode (with a sql WHERE) while 'join' is useful for
+having a correct LEFT JOIN against the main table in LIST/VIEW mode
+
+$opts['fdd']['vendor']['values']['join'] =
+   'PMEjoin0.part_no = PMEjoin1.part_no AND is_preferred = "true" ';
+
+-----
+
+un-tested:
+
+//  1. Have an hidden virtual field that is doing the custom join :
+
+$opts['fdd']['dummy_field'] = array(
+  'input' => 'VR',
+  'options' => '',
+  'values' => Array(
+    'table' => 'table_b',
+    'column'      => 'id',
+    'description' => 'id', //Required by the implementation
+    'join'        => '$main_table.id = $join_table.id'
+  )
+);
+
+// 2. then, use 'sql' field option to display correct value
+
+$opts['fdd']['address'] = array(
+  'name'    => 'Address',
+  'options' => 'LVF',
+  'sql'     => 'if(table_b.address is null, table_a.address, table_b.address)'
+);
+
+// But this will work only in LVF mode.
+
+
+-------
+
+May 2004 CVS version supports a new ['join'] option.
+
+Here is my test details in case anyone else has the same question.
+
+orders table
+orderid
+itemid
+
+items table
+itemid
+name
+
+CREATE TABLE `orders` (
+`orderid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+`itemid` INT UNSIGNED NOT NULL ,
+PRIMARY KEY ( `orderid` )
+);
+
+CREATE TABLE `items` (
+`itemid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+`name` VARCHAR( 10 ) NOT NULL ,
+PRIMARY KEY ( `itemid` )
+);
+
+INSERT INTO `items` ( `itemid` , `name` )
+VALUES (
+'1', 'test'
+);
+
+$opts['fdd']['orderid'] = array(
+'name' => 'Orderid',
+'select' => 'T',
+'options' => 'AVCPDR', // auto increment
+'maxlen' => 10,
+'default' => '0',
+'sort' => true
+);
+
+$opts['fdd']['itemid'] = array(
+'name' => 'Part Number',
+'select' => 'T',
+'maxlen' => 11,
+'default' => '0',
+'required' => true,
+'values' => array( 'table' => 'items', 'column' => 'itemid', 'description' => 'name' ),
+'sort' => true
+);
+
+
+$opts['fdd']['vendor']['values']['join'] =
+   'PMEjoin6.part_no = PMEtable0.part_no AND is_preferred = "TRUE" ';
+
+
+Please note that 'filters' is used for filtering items in dropdown during ADD/EDIT mode (with a SQL WHERE) while 'join' is useful for having a correct LEFT JOIN against the main table in LIST/VIEW mode.
+
+$opts['fdd']['vendor']['values']['join'] =
+   'PMEjoin0.part_no = PMEjoin1.part_no
+   AND
+   is_preferred = "true" ';
+
+Maybe will do the correct join you want.
+
+-----
+
+excerpt from related, older project
+
+
+// my_mdd_tel_did.php created Thu, 17 Jul 2003 16:12:28 -0600
+
+// Certain WHERE statements require prepending PMEtable0
+// or PMEjoinX where X is a number before table name.
+
+$opts['tb'] = 'mdd_tel_did'; // Table name
+
+// ob_start('ob_gzhandler'); // Send compressed data
+
+require('pme-vars.php'); // Logon ($hn, $db, $un, $pw)
+
+array_key_exists('grouping',$_GET) ? $grouping = $_GET['grouping'] : $grouping = 0;
+
+$opts['cgi']['persist'] = array('grouping' => $grouping);
+
+if($grouping == 0){
+   $opts['filters'] = 'PMEjoin1.FullName NOT LIKE "%..%"';
+   $opts['sort_field'] = array('AgentID');
+   $oper_label = empty($operation) ? 'Telephone DID Configuration' : $operation;
+}elseif($grouping == 1){
+   $opts['sort_field'] = array('System', 'AgentID');
+   $oper_label = empty($operation) ? 'Click column titles to sort records' : $operation;
+}
+
+switch($HTTP_SERVER_VARS['DOCUMENT_ROOT'])
+{
+   // Set error_reporting.
+   Case 'C:/apache/htdocs':
+      error_reporting(E_ALL & ~E_NOTICE);
+      break;
+   default:
+      error_reporting(0);
+      break;
+};
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-style-type" content="text/css">
+<meta name="googlebot" content="index, nofollow, noarchive">
+<meta name="robots" content="index, nofollow, noarchive, nocache, noimageindex, nomediaindex">
+
+// If old Netscape browser, require 'safe' stylesheet.
+if(stristr($HTTP_USER_AGENT,'Mozilla/4.5') || stristr($HTTP_USER_AGENT,'Mozilla/4.7') || stristr($HTTP_USER_AGENT,'Mozilla/4.8')){
+   require('style.ngeneric.php');
+}else{
+   // $cfg['bdr_bottom'] = 4; // [1|4] (see style.php)
+   require('style.php');
+}
+
+
+<title>my_mdd_tel_did.php</title>
+
+</head>
+
+<body>
+
+<!-- Container table for $operation labels, phpMyEdit form, and text below the form. -->
+<p style="color:aqua">Reminder: AgentID used to lookup names is actually looking up the ID field in mdd_staff (not AgentID)</p>
+
+<table class="container" cellspacing="0" cellpadding="5">
+
+
+// First table row/cell appears above phpMyEdit form row/cell.
+
+
+// echo "\n".'<tr><td><h3 style="color:#99ccff">'.$grouping.'</h3></td></tr>'."\n\n";
+echo "\n".'<tr><td><h3 style="color:#99ccff">'.$oper_label.'</h3></td></tr>'."\n\n";
+
+
+
+<!-- Begin the "container table" cell for the phpMyEdit form. -->
+
+<tr><td>
+
+
+// phpMyEdit variables: http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/index.html
+
+$opts['key'] = 'RecordID'; // Primary key checked
+
+$opts['key_type'] = 'int'; // Primary key column type
+
+$opts['inc'] = -1; // Number of rows to include in List mode.
+
+// General permission options:
+$opts['options'] = 'ACPVDFL'; // [A|C|P|V|D|F|I|L] (L is always assumed and can be omitted.)
+
+$opts['multiple'] = '4'; // SELECT box size (if SET/ENUM column types exist).
+
+// Navigation: Text/Button/Graphic with Up/Down - [T|B|G] + [U|D]
+$opts['navigation'] = 'TUD';
+
+$opts['display'] = array(  // Display: query, sort order, timer [true|false].
+   'query' => true,
+   'sort'  => true,
+   'time'  => false
+);
+
+$opts['language'] = $HTTP_SERVER_VARS['HTTP_ACCEPT_LANGUAGE'];
+
+// Note: permission options for specific columns may be changed in the field arrays below.
+
+
+// RecordID - smallint(3) - int
+$opts['fdd']['RecordID'] = array(
+  'name'     => 'RecordID',
+  'select'   => 'T',
+  'options'  => 'VDR',
+  'maxlen'   => 3,
+  'default'  => '0',
+  'required' => true,
+  'sort'     => true
+);
+$opts['fdd']['RecordID']['help|ACP'] = 'AUTO-INCREMENT';
+// $opts['fdd']['RecordID']['options'] = 'ACPVDLF';
+
+
+// AgentID - smallint(5) - int
+$opts['fdd']['AgentID'] = array(
+  'name'     => 'Agent ID',
+  'select'   => 'D',
+  'maxlen'   => 5,
+  'default'  => '0',
+  'required' => true,
+  'sort'     => true
+);
+$opts['fdd']['AgentID']['help|ACP'] = 'Lookup';
+// $opts['fdd']['AgentID']['options'] = 'ACPVDLF';
+$opts['fdd']['AgentID']['values']['table'] = 'mdd_staff'; // other table
+$opts['fdd']['AgentID']['values']['column'] = 'ID'; // column e.g. id
+$opts['fdd']['AgentID']['values']['description']['columns']['0'] = 'FullName';
+$opts['fdd']['AgentID']['nowrap'] = 'true';
+
+// Number - varchar(15) - string
+$opts['fdd']['Number'] = array(
+  'name'     => 'A/C/Phone',
+  'select'   => 'D',
+  'maxlen'   => 15,
+  'required' => false,
+  'sort'     => true
+);
+$opts['fdd']['Number']['help|ACP'] = 'XXX-XXX-XXXX';
+// $opts['fdd']['Number']['options'] = 'ACPVDLF';
+$opts['fdd']['Number']['nowrap'] = 'true';
+
+
+// Extension - smallint(4) - int
+$opts['fdd']['Extension'] = array(
+  'name'     => 'Ext.',
+  'select'   => 'D',
+  'maxlen'   => 4,
+  'default'  => '0',
+  'required' => false,
+  'sort'     => true
+);
+$opts['fdd']['Extension']['help|ACP'] = 'XXX';
+// $opts['fdd']['Extension']['options'] = 'ACPVDLF';
+// $opts['fdd']['Extension']['css'] = array('postfix' => 'right-justify');
+
+
+/*
+**************** Abandoned after creating the above lookup field *********
+      // FullName - varchar(40) - string
+      $opts['fdd']['FullName'] = array(
+        'name'     => 'FullName',
+        'select'   => 'T',
+        'maxlen'   => 40,
+        'required' => false,
+        'sort'     => true
+      );
+*/
+
+
+// System - varchar(40) - string
+$opts['fdd']['System'] = array(
+  'name'     => 'Location',
+  'select'   => 'D',
+  'maxlen'   => 40,
+  'required' => false,
+  'sort'     => true
+);
+$opts['fdd']['System']['help|ACP'] = 'System components (omit for people)';
+// $opts['fdd']['System']['options'] = 'ACPVDLF';
+
+
+// DID - smallint(3) - int
+$opts['fdd']['DID'] = array(
+  'name'     => 'DID',
+  'select'   => 'D',
+  'maxlen'   => 3,
+  'default'  => '0',
+  'required' => false,
+  'sort'     => true
+);
+$opts['fdd']['DID']['help|ACP'] = 'Limit 3 characters.';
+// $opts['fdd']['DID']['options'] = 'ACPVDLF';
+$opts['fdd']['DID']['css'] = array('postfix' => 'right-justify');
+
+
+// Phone - varchar(35) - string
+$opts['fdd']['Phone'] = array(
+  'name'     => 'Hardware',
+  'select'   => 'D',
+  'maxlen'   => 35,
+  'required' => false,
+  'sort'     => true
+);
+$opts['fdd']['Phone']['help|ACP'] = 'Select';
+// $opts['fdd']['Phone']['options'] = 'ACPVDLF';
+// $opts['fdd']['Phone']['nowrap'] = 'true';
+$opts['fdd']['Phone']['values2'] = array(
+  '' => '',
+  '7* TO ENTER MESSAGING' => '7* TO ENTER MESSAGING',
+  'FAX' => 'FAX',
+  'MLX16DP' => 'MLX16DP',
+  'MLX20L' => 'MLX20L',
+  'Virtual' => 'Virtual'
+);
+
+
+// EmailCk - tinyint(1) - int
+$opts['fdd']['EmailCk'] = array(
+  'name'     => 'EmailCk',
+  'select'   => 'D',
+  'maxlen'   => 1,
+  'default'  => '0',
+  'required' => false,
+  'sort'     => true
+);
+$opts['fdd']['EmailCk']['help|ACP'] = 'Select';
+// $opts['fdd']['EmailCk']['options'] = 'ACPVDLF';
+$opts['fdd']['EmailCk']['values2'] = array(
+  '0' => 'No',
+  '1' => 'Yes'
+);
+
+
+// Field list: RecordID, AgentID, FullName, System, DID, Number, Extension, Phone, EmailCk
+
+// Variables list: $RecordID, $AgentID, $FullName, $System, $DID, $Number, $Extension, $Phone, $EmailCk
+
+require_once('phpMyEdit.tabclass.php'); // Work-horse.
+
+new phpMyEdit($opts); // Form is generated here.
+
+
+
+
+</td></tr> <!-- Close container table cell (end phpMyEdit form above) -->
+
+<tr><td>
+
+<p style="color:#00ffff">
+Filters:
+echo $grouping == 0 ? '<a href="my_mdd_tel_did.php?grouping=1" title="All Information" style="color:#00ffff">All Information</a>' : '';
+echo $grouping == 1 ? '<a href="my_mdd_tel_did.php?grouping=0" title="People Only" style="color:#00ffff">People Only</a>' : '';
+
+</p>
+
+</td></tr>
+
+<tr><td><br>
+<p style="color:#99ccff">[V]iew - [C]hange - co[P]y - [D]elete</p>
+<p style="color:#99ccff"><?php echo $opts['tb'].' - '.basename($_SERVER["PHP_SELF"]); </p>
+</td></tr>
+
+</table>
+</body>
+</html>
+
+
+
+---------
+
+http://opensource.platon.sk/forum/projects/viewtopic.php?t=455
+
+If you want to show or edit values from two both tables.
+
+TableA
+
+   A_ID
+   A_FD1
+   A_FD2
+   B_ID
+   A_FD3
+
+TableB
+
+   B_ID
+   B_FD1
+   B_FD2
+   B_FD3
+
+TableA is connected to TableB via B_ID
+
+
+$opts['fdd']['A_FD1'] = array(
+'name' => 'TableA_FD1',
+'select' => 'T',
+'maxlen' => 20,
+'sort' => true
+);
+
+$opts['fdd']['A_FD2'] = array(
+'name' => 'TableA_FD2',
+'select' => 'T',
+'maxlen' => 20,
+'sort' => true
+);
+
+$opts['fdd']['B_ID'] = array(
+'name' => 'TableA_B_ID', // TableA.B_ID ref
+'select' => 'T',
+'maxlen' => 20,
+'sort' => true
+);
+
+$opts['fdd']['B_ID']['values']['table'] = 'TableB';
+$opts['fdd']['TechTypeID']['values']['column'] = 'B_ID';
+$opts['fdd']['TechTypeID']['values']['description'] = 'B_FD1';
+
+$opts['fdd']['B_ID'] = array(
+'name' => 'TableA_B_ID', // TableA.B_ID ref
+'select' => 'D',
+'maxlen' => 20,
+'sort' => true
+);
+
+$opts['fdd']['B_ID']['values']['table'] = 'TableB';
+$opts['fdd']['TechTypeID']['values']['column'] = 'B_ID';
+$opts['fdd']['TechTypeID']['values']['description'] = 'B_FD2';
+
+
+AND SO ON... you can call as many fields from tableB as you want ...
+either in Text Boxes or DropDown. If you have a Ref for TableC
+in TableA like C_ID you could also call other values from TableC
+if you like, i just don't know if there is a join limit for
+conecting tables this way.

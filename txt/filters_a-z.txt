@@ -1,0 +1,139 @@
+// Example of displaying A HREF tags and filtering records.
+
+// Get fl2 (passed from custom links appearing in the page footer)
+
+$fl2 = array_key_exists('fl2', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl2']))) : '';
+
+if($fl2 > '') {
+
+   $opts['cgi']['persist'] = array('fl2' => $fl2);
+
+   $opts['filters'] = 'Company REGEXP "^'.$fl2.'"';
+
+   $special_label = 'Filter by Company  ('.$fl2.')';
+
+}
+
+// Get fl3 (passed from custom links appearing in the page footer)
+
+$fl3 = array_key_exists('fl3', @$_REQUEST) ? strip_tags(stripslashes(trim(@$_REQUEST['fl3']))) : '';
+
+if($fl3 > '') {
+
+   $opts['cgi']['persist'] = array('fl3' => $fl3);
+
+   $opts['filters'] = 'LastName REGEXP "^'.$fl3.'"';
+
+   $special_label = 'Filter by Last Name ('.$fl3.')';
+
+}
+
+// normal form content...
+
+$opts['tb'] = 'contacts';
+
+$opts['key'] = 'ID';
+
+$opts['key_type'] = 'int';
+
+$opts['sort_field'] = array('Company');
+
+$opts['inc'] = 10;
+
+$opts['options'] = 'ACPVDF';
+
+$opts['multiple'] = '4';
+
+$opts['navigation'] = 'TUD';
+
+$opts['display'] = array('form' => true, 'query' => true, 'sort' => true, 'time' => false, 'tabs' => true);
+
+$opts['language'] = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+
+$opts['fdd']['ID'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '0',
+  'input'      => 'R',
+  'maxlen'     => 8,
+  'name'       => 'ID',
+  'options'    => 'VD',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 8,
+  'tab'        => 'Company',
+  'sort'       => true
+);
+
+$opts['fdd']['Company'] = array(
+  'help|ACP'   => 'Limit 255 chars.',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Company',
+  'options'    => 'ACPVDLF',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 60,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+$opts['fdd']['FirstName'] = array(
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'FirstName',
+  'options'    => 'ACPVDLF',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 60,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// Column type: string - varchar(255)
+
+
+$opts['fdd']['LastName'] = array(
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'LastName',
+  'options'    => 'ACPVDFL',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 60,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+require('phpMyEdit.tabclass.php');
+
+new phpMyEdit($opts);
+
+
+
+if(!isset($_REQUEST['PME_sys_operation']) && !isset($_REQUEST['PME_sys_moreadd']) && !isset($_REQUEST['PME_sys_morechange'])){
+
+   echo "\n".'<table class="container"><tr><td>Company Filter</td><td>';
+
+   for($i=65; $i<91; ++$i) {
+
+      echo "\n".'<a href="'.basename($_SERVER["PHP_SELF"]).'?fl2='.chr($i).'">'.chr($i).'</a>';
+
+      echo ($i < 90) ? ' - '."\n" : "\n";
+
+   }
+
+   echo "\n".'</td></tr>';
+
+   echo "\n".'<tr><td>Last Name Filter</td><td>';
+
+   for($i=65; $i<91; ++$i) {
+
+      echo "\n".'<a href="'.basename($_SERVER["PHP_SELF"]).'?fl3='.chr($i).'">'.chr($i).'</a>';
+
+      echo ($i < 90) ? ' - '."\n" : "\n";
+
+   }
+
+   echo "\n".'</td></tr><tr><td colspan="2"><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=&fl3=">List All</a></td></tr></table>';
+
+}
+

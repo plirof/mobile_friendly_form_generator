@@ -1,0 +1,69 @@
+If you had a column type INT named 'int_date' which contains
+a Unix timestamp (e.g. 1346008364) and your phpMyEdit form should
+display a human readable date in the List and View modes
+(e.g. 2005-07-10 10:55:31 or YYYY-MM-DD HH:MM:SS) then consider
+the following method. In the following usage 'int_date' will be
+overwritten using the current time() in order to emulate the MySQL
+TIMESTAMP function.
+
+Usage of the 'css' argument below is specific
+to the stylesheet for PHP Multi Form Generator.
+
+$opts['fdd']['int_date'] = array(
+  'default'    => $_SERVER['REQUEST_TIME'],
+  'help|ACP'   => 'Seconds since 01/01/1970',
+  'input'      => 'R',
+  'maxlen'     => 10,
+  'name'       => 'Integer Date',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 10,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+// $opts['cgi']['overwrite']['int_date'] = $_SERVER['REQUEST_TIME']; // over-write when saving
+
+$opts['fdd']['int_date']['sql|VLF'] = 'CONCAT(FROM_UNIXTIME(int_date))';
+
+$opts['fdd']['dummy_field_1'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'name'       => 'Days since last edit',
+  'mask'       =>  '%0.3f',
+  'options'    => 'VLF',
+  'sql|VLF'        => '( '.$_SERVER['REQUEST_TIME'].' - UNIX_TIMESTAMP(updated) ) / 86400',
+);
+
+$opts['fdd']['dummy_field_2'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'name'       => 'Hours since last edit',
+  'mask'       =>  '%0.2f',
+  'options'    => 'VLF',
+  'sql|VLF'        => '( '.$_SERVER['REQUEST_TIME'].' - UNIX_TIMESTAMP(updated) ) / 3600',
+);
+
+$opts['fdd']['dummy_field_3'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'name'       => 'Minutes since last edit',
+  'mask'       =>  '%0.1f',
+  'options'    => 'VLF',
+  'sql|VLF'        => '( '.$_SERVER['REQUEST_TIME'].' - UNIX_TIMESTAMP(updated) ) / 60',
+);
+
+-----
+
+Convert an integer field whose value resulted from inserting PHP's $_SERVER['REQUEST_TIME'] to a date using:
+
+$opts['fdd']['col_name']['sql|VLF'] = 'CONCAT(FROM_UNIXTIME(col_name, \"%a %b %e %Y %h:%i %p\"))';
+
+-----
+
+Given a column named 'time_int' that is an integer column
+containing values set by PHP's $_SERVER['REQUEST_TIME'], the following
+has an effect similar to that of a TIMESTAMP.
+
+$opts['cgi']['overwrite']['time_int'] = $_SERVER['REQUEST_TIME'];
+
+$opts['fdd']['time_int']['sql|VLF'] = 'CONCAT(FROM_UNIXTIME(time_int))';
+

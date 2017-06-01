@@ -1,0 +1,636 @@
+phpMyEdit Cheat Sheet
+
+Typical field arrays looks something like the following.
+Arrays can be appended with post-initialized variables.
+Readability is sometimes enhanced by post-initializing variables.
+
+
+$opts['fdd']['customer_number'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'Limit 10 digits',
+  'input'      => 'R',
+  'name'       => 'Customer Number',
+  'options'    => 'VCDFL',
+  'select'     => 'T',
+  'size'       => 10,
+  'sort'       => true
+);
+// If the tab feature is implemented, the first column must have a tab
+$opts['fdd']['customer_number']['tab|ACP'] = 'Customer Number';
+
+
+// column 1: `customer_name` varchar(255)
+
+$opts['fdd']['customer_name'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 255 characters',
+  'input'      => '',
+  'maxlen'     => 255,
+  'name'       => 'Customer Name',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 90,
+  'sqlw'       => 'IF($val_qas = "", NULL, $val_qas)',
+  'sort'       => true
+);
+
+
+// column 2: `contact_last_name` varchar(50)
+
+$opts['fdd']['contact_last_name'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 50 characters',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'Contact Last Name',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['contact_last_name']['js']['required'] = true;
+$opts['fdd']['contact_last_name']['js']['hint'] = 'An entry is required for Contact Last Name';
+
+
+// column 3: `contac_first_name` varchar(50)
+
+$opts['fdd']['contact_first_name'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 50 characters',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'Contac First Name',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+$opts['fdd']['contact_first_name']['js']['required'] = true;
+$opts['fdd']['contact_first_name']['js']['hint'] = 'An entry is required for Contac First Name';
+
+
+// column 4: `phone` varchar(50)
+
+$opts['fdd']['phone'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 50 characters',
+  'input'      => '',
+  'maxlen'     => 50,
+  'name'       => 'Phone',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 50,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['phone']['js']['required'] = true;
+// $opts['fdd']['phone']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['phone']['js']['hint'] = 'An entry is required for Phone';
+
+
+Each field array can include display mode properties: 
+   'options' => [A|C|P|V|D|F|I|L]
+
+   Add, Change, coPy, View, Delete, Filter, Initial sort suppressed, List
+   List is assumed and technically does not have to be specified.
+
+Since version 5.4, certain options should be moved to the 'input' option
+to ensure compatibility with future releases.
+
+Input is normally empty, yet can be set to R or W or H (Readonly, passWord, Hidden)
+
+   'input' => ''
+   'input' => 'R'
+
+While unlikely, the following field array "could" be defined using more than a dozen options:
+
+Most options can be appended with |VLF to restrict their application to View, List, and Filter modes.
+
+$opts['fdd']['col_name'] = array(                          // Begin array
+   'colattrs|LF'   => 'style=\"color:#ff0000;\"',          // Apply style to table cell in List/Filter mode
+   'css'           => array('postfix' => 'right-justify'), // MFG: right align numeric cells
+   'datemask'      => date('Y-m-d'),                       // Apply datemask
+   'escape|LF'     => false,                               // Suppress htmlspecialchars() which is the default display mode
+   'help|ACP'      => 'Limit 5 chars.',                    // MFG: column type dependent Help
+   'input'         => 'RWH',                               // Readonly, passWord, Hidden
+   'mask|LF'       => '%.10s',                             // Display only the first 10 characters
+   'maxlen'        => 5,                                   // INPUT maxlength, never more than 60, often shortened if the field inludes encrypted passwords
+   'name'          => 'Title',                             // Column title
+   'nowrap'        => true,                                // Equivalent to <TD NOWRAP>...</TD>
+   'options'       => 'ACPVDFL',                           // Add, Change, coPy, View, Delete, Filter (search), and List
+   'required'      => true,                                // Invokes Javascript to enforce user entry
+   'select'        => 'D',                                 // Dropdown, Text, Numeric, Multiple SELECT boxes
+   'size'          => 5,                                   // INPUT size
+   'sort'          => false,                               // Column title non-sortable/clickable
+   'sql'           => 'TRIM(\"$val_as\")',                 // trim()
+   'sqlw'          => 'UPPER($val_qas)',                   // strtoupper()
+   'strftimemask'  => '%c',                                // strftimemask()
+   'strip_tags|LF' => true,                                // strip_tags
+   'tab'           => 'Title',                             // Text for A HREF tag in TAB's menu
+   'textarea'      => array('rows' => 5, 'cols' => 90),    // TEXTAREA size in ACP modes
+   'trimlen|LF'    => 30,                                  // Display the first 30 characters in List/Filter mode
+   'URL|VLF'       => '$value',                            // URL
+   'URLtarget|VLF' => '_blank',                            // Launch in new window
+   'URLdisp|VLF'   => 'GO'                                 // Link text optionally replacing $value
+};
+
+Native MySQL functions can be applied.
+Convert an integer field whose value resulted from inserting time() to a date using:
+$opts['fdd']['col_name']['sql'] = 'CONCAT(FROM_UNIXTIME(col_name, \"%a %b %e %Y %h:%i %p\"))';
+
+The above can be restricted to View, List, and Filter modes:
+$opts['fdd']['col_name']['sql|VLF'] = 'CONCAT(FROM_UNIXTIME(col_name, \"%a %b %e %Y %h:%i %p\"))';
+
+Anatomy of a field definition (fdd) for a TEXT/BLOB field
+
+$opts['fdd']['your_column_name'] = array(
+
+  'default'    => '',                // BLOB fields won't have a default entry; the defined default for other column types often appears here
+
+  'help|ACP'   => 'Hello World',     // Message appearing in the Help cell if the page mode is Add, Change, or coPy
+
+  'input'      => '',                // Sometimes set as [R]ead-only, [H]idden, or [P]assword. Use R for virtual (dummy) fields.
+
+  'maxlen|ACP' => 65535,             // Field length defined in MySQL, could be used for input validation purposes
+
+  'name'       => 'Content',         // Column label
+
+  'options'    => 'ACPVDFL',         // Suppress [F]ilter by removing F, suppress [L]ist by removing L, suppress initial sorting by adding I
+
+  'select'     => 'T',               // Filter (Search) box in List mode (set D for drop down, N for numeric range qualifiers, M for multiple SELECT)
+
+  'sqlw'       => 'TRIM("$val_as")', // Apply MySQL's trim() function to SQL write
+
+  'strip_tags|FL' => true,           // Usually true unless displaying HTML markup in which case false is typically applied
+
+  'textarea'   => array('rows' => '5', 'cols' => '80'), // Dimensions for the HTML TEXTAREA box
+
+  'trimlen|FL' => 100,                // In [F]ilter and [L]ist modes display only the first 100 characters
+
+  'sort'       => false              // If set true, the column title is a sort link. BLOB fields should be false.
+
+);
+
+// Basic Javascript validation of a field named `col_name`
+
+$opts['fdd']['col_name']['js']['required'] = true; // Entry is required
+
+$opts['fdd']['col_name']['js']['regexp'] = '/^[a-zA-Z]*$/'; // Optionally apply Javascript REGEX / regular expression
+
+$opts['fdd']['col_name']['js']['hint'] = 'Entry of Content is required'; // Contents of the Javascript alert
+
+----------
+
+Field options ['fdd'] can be restricted to specific page modes (ACPVDFLI), for example: 'help|ACP' or 'trimlen|FL'
+
+----------
+
+$opts['cgi']['append']['PME_sys_fl'] = 1; // Search buttons ON
+
+----------
+
+// Special page elements: 
+// http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.common-options.html
+
+$opts['display'] = array('form' => true, 'num_pages' => true, 'num_records' => true, 'query' => true, 'sort' => true, 'tabs' => true, 'time' => false);
+
+----------
+
+The following elements are available for use in a field definition arrays.
+
+'colattrs'      user-defined table cell attributes: 'colattrs|FL' => 'style="color:#ff0000; background-color:transparent;"',
+
+'css'           user-defined style class '-right-justify' is a form generator element, not a phpMyEdit element
+
+'datemask'      applicable to TIMESTAMP(14) and DATETIME fields
+                   'datemask' => 'Y-m-d H:i:s'
+                   'datemask' => 'r'
+
+'default'       default values are extracted from MySQL when the script is created.
+                NULL values, if found, are handled using the 'sqlw' element.
+
+                Refrain from defining columns with a NULL value unless you have a specific reason for using NULL.
+
+'escape'        if set to true, htmlspecialchars() will be applied to data (set false to display HTML markup)
+
+'help|ACP'      help / guidance displayed in ACP modes in a 3rd column (TD tag next to data)
+                MFG offers several methods of initializing and/or populating this TD tag
+
+'input'         Normally empty, applications are R, W, and H (Readonly, passWord, Hidden)
+                R - indicates that a field is read only (TIMESTAMP or auto_increment)
+                W - indicates that a field is a password field
+                H - indicates that a field is to be hidden and marked as hidden
+
+'mask'          a string (e.g. '%01.2f') used by sprintf() to format output (see also number_format)
+
+'maxlen'        maxlength attribute in the display of INPUT boxes relating to add/edit/search
+
+'name'          title for column headings ... PHP's ucwords(strtolower(col_name))
+
+'nowrap'        HTML NOWRAP attribute for TD tags
+
+'number_format' emulates PHP's number_format() function
+
+'options'       ACPVDFLI - optional parameter to control whether a field is displayed:
+                A - add, C - change, P - copy, D - delete, V - view, F - filter, L - list
+                I - initial sort suppressed
+
+'php'          If the 'php' option is set, a file of that name is included (and executed) in place of a value.
+               Behavior is the same as the triggers feature.
+               http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.fields.php.html
+
+'required'     true or false (true invokes javascript to prevent null entries)
+               Do not use quotation marks (") withing the 'hint'.
+
+               The above post-initialization example may be easier to work with than the
+               following examples which might be applied directly to a field options array.
+
+                 'js' => array(
+                   'required' => true,
+                   'regexp' => '/^[0-9]*$/',
+                   'hint' => 'Please enter only numbers 0-9 in the col_name field.'
+                   )
+
+'select'        HTML INPUT/SELECT box type used for filtering records
+                T - text, N - numeric, D - drop-down, M - multiple selection
+                Defining fields as ENUM or SET in MySQL will result in HTML SELECT boxes in Filter mode.
+
+'size'          size attribute applied to HTML INPUT boxes
+
+'strftimemask'  optinally applied to INT fields containing a Unix timestamp
+                'strftimemask' => '%c',
+                'strftimemask' => '%a %m-%d-%Y %H:%M %p',
+
+'sort'          In List mode, if set to true, the column header is a clickable link that
+                enables column sorting. BLOB columns should usually be set to false.
+
+'sql'           see documentation, examples follow
+
+                'sql|FLV' => 'CONCAT(FROM_UNIXTIME(col_name, "%a %b %e %Y %h:%i %p"))',
+                'sql|FLV' => 'if($col_name <> "", CONCAT(DATE_FORMAT($col_name, "%a %b %e %Y %h:%i %p")), "")',
+                'sql|FLV' => 'if(FirstName <> "", CONCAT(LastName, ", ", FirstName), LastName)',
+                'sql|FLV' => 'if(start_date <> "", CONCAT(start_date, "%b %e %Y - %a"), "")',
+
+'sqlw'          'sqlw' => 'IF($val_qas = "", NULL, $val_qas)'
+
+                'sqlw' => 'TRIM(UPPER($val_as))'
+
+'strip_tags'    apply PHP's strip_tags($col_name)
+
+'tab|ACP'       If tabs are enabled in the $opts['display'] array, apply clickable Javascript tabs
+                (sub-forms) appear in ACP modes. Apply to column 0 and one (or more) additional fields.
+
+'textarea'      rows/cols attribute for HTML TEXTAREA boxes
+
+'trimlen|FL'    number of characters to display in [F]ilter and [L]ist modes (often applied to BLOB/TEXT fields)
+
+'URL'           used to make a field 'clickable' in the display
+
+                for email addresses: 'mailto:$value'
+
+                where the value might be www.domain.com: 'http://$value'
+
+                where the value might be http://www.domain.com: '$value'
+
+'URLtarget'     HTML A HREF target parameter, e.g.  'target="_blank"'
+
+'values'        $opts['fdd']['col_name']['values'] = array('0', '1', '2', '3');
+
+'values2'       $opts['fdd']['col_name']['values2'] = array('0' => 'No', '1' => 'Yes');
+
+----------
+
+Extract 'values' from a different table (initialization):
+
+$opts['fdd']['field_name'] = array(
+  'default'    => '',
+  'maxlen'     => 20,
+  'name'       => 'Field Name',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 20,
+  'sort'       => true,
+  'values'     => array(
+    'db'          => 'databaseName',
+    'table'       => 'extractTable',
+    'column'      => 'extractColumn',
+    'description'=> array(
+       'columns' => array('0' => 'name', '1' => 'father_name', '2' => 'mother_name'),
+       'divs'    => array('0' => ' - ', '1' => ' - '),
+     ),
+    'filters'     => 'col_name = "criteria"',
+    'orderby'     => 'yet_another_col')
+);
+
+$opts['fdd']['dummy1'] = array (
+   'name'    => 'Dummy Field',
+   'sql'     => 'CONCAT(first_name, " ", last_name)',
+   'options' => 'VDL',
+   'escape'  => false,
+   'sort'    => true
+);
+
+----------
+
+Extract 'values' from a different table (post-initialization may enhance readability):
+
+$opts['fdd']['col_name']['values']['db']     = 'databaseName';
+$opts['fdd']['col_name']['values']['table']  = 'extractTable';
+$opts['fdd']['col_name']['values']['column'] = 'extractColumn';
+$opts['fdd']['col_name']['values']['description']['divs']['-1'] = ', ';
+$opts['fdd']['col_name']['values']['description']['columns']['0'] = 'desc_column_0';
+
+$opts['fdd']['col_name']['values']['description']['divs']['0'] = ', ';
+
+$opts['fdd']['col_name']['values']['description']['columns']['1'] = 'desc_column_1';
+$opts['fdd']['col_name']['values']['filters'] = 'id = "something" ';
+$opts['fdd']['col_name']['values']['orderby'] = 'another_column';
+
+$opts['fdd']['dummy1'] = array (
+   'name'    => 'Dummy Field',
+   'sql'     => 'CONCAT(first_name, " ", last_name)',
+   'options' => 'VDL',
+   'escape'  => false,
+   'sort'    => true
+);
+
+----------
+
+Global record filters facilitate working with a subset of records:
+
+$opts['filters'] = 'valid_user = "'.$_SESSION['valid_user'].'" OR valid_user = "public"';
+
+$opts['cgi']['persist'] = array('vrec' => $_REQUEST['vrec'] );
+
+See also filters_a-z.txt
+
+$opts['filters'] = "PMEtable0.active = '1'";
+
+$opts['filters'] = "PMEtable0.deleted = '0'";
+
+$opts['filters'] = "PMEtable0.column1 like '%11%' AND column2<17";
+
+$opts['filters'] = "PMEtable0.section_id = 9";
+
+$opts['filters'] = "PMEtable0.sessions_count > 200";
+
+----------
+
+CGI variables:
+
+$opts['cgi']['overwrite']['DateCreated'] = date('Y-m-d');
+
+$opts['cgi']['persist'] = $your_variable;
+
+$opts['cgi']['persist'] = array('article_id' => $article_id, 'session_id' => $session_id);
+
+----------
+
+Notification documentation: http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.logging.html
+
+Notification examples:
+
+$opts['notify']['from']   = 'user@domain.com';
+$opts['notify']['prefix'] = $_SERVER['REQUEST_URI'].' - ';
+$opts['notify']['wrap']   = '72';
+$opts['notify']['all']    = 'user@domain.com'; // events: insert, update, delete
+$opts['notify']['delete'] = 'user@domain.com'; // event: delete
+$opts['notify']['insert'] = 'user@domain.com'; // event: insert
+$opts['notify']['update'] = 'user@domain.com'; // event: update
+
+----------
+
+Forum post regarding usage of the 'php' option to call external PHP scripts:
+http://opensource.platon.sk/forum/projects/viewtopic.php?t=1569821
+
+spudnukem - Post Posted: 08 Dec 2010 13:54
+
+Hi, probably could be done better but this is how I got different
+link types in a value ie skype, mailto and pbx or any other call
+based on a contact type field and an address from another field .... hope it helps someone!
+
+   $opts['fdd']['conType'] = array(
+     'name'     => 'conType',
+     'select'   => 'D',
+     'php'      => 'test.php',
+     'values'   => array('Skype','Email','Phone','NONE'),
+     'maxlen'   => 60,
+     'default'  => '0',
+     'sort'     => true
+   );
+
+   $opts['fdd']['address'] = array(
+     'name'     => 'Address',
+     'select'   => 'T',
+     'escape'   => false,
+     'maxlen'   => 60,
+     'sort'     => true
+   );
+
+and in my test.php;
+
+      if($value == 'Skype'){
+     echo '<a href=skype:'.$row['qf3'].'?call>skype</a>';
+   }elseif($value == 'Email'){
+     echo '<a href=mailto:'.$row['qf3'].'>email</a>';
+   }elseif($value == 'Phone'){
+     echo '<a href=javascript:void(0); onclick="callpbx('.$row['qf3'].')";>phone</a>';
+   }else{
+     echo $value;
+   }
+   return;
+   
+
+----
+
+Native MySQL functions are supported, including CONCAT & REPLACE
+
+$opts['fdd']['dummy2'] = array (
+   'name' => 'Thumbnail',
+   'sql|VLF' => 'if(category = "other",
+      CONCAT("<a href=\"", dir, "/", filename, "\" target=\"_blank\">link</a>"),
+         if(category = "thumb", CONCAT("<a rel=\"example_group\" href=\"", REPLACE(dir, "/tn", "/"), filename, "\" target=\"_blank\"><img src=\"", dir, "/", filename, "\" ", " alt=\"\" border=\"0\"></a><br><a href=\"fancybox.change.php?upld_id=", upld_id, "\">Replace</a>"), ""))',
+   'options'  => 'VLF',
+   'input'  => 'R',
+   'escape' => false,
+   'sort'     => false
+);
+
+
+-----
+
+Example: a minus sign (-) in front of a column name enforces DESCending sort order.
+
+$opts['sort_field'] = array('-date_field', '-time_field');
+
+-----
+
+// This will cause descending sorting by first field
+// if another type of sort was not specified/selected by user.
+$opts['cgi']['append'] = array('sfn' => '-0');
+
+// This will cause the same sort always in all cases.
+$opts['cgi']['overwrite'] = array('sfn' => '-0');
+
+-----
+
+// printer friendly display, possibly triggered for View mode
+
+if ($pf == 1) {    // meaning 'p(rinter) f(riendly)
+    $opts['cgi']['append']['fl'] = 0;  // no request fields
+    $opts['inc'] = -1; // to display all records
+    $opts['options'] = ''; // no action buttons
+    $opts['navigation'] = ''; // no navigation buttons on the top
+    $opts['display'] = array( 'query' => false, 'sort'  => false, 'time'  => false );
+}
+
+-----
+
+$opts['fdd']['link_for_download']['sql|LF'] = 'if(link_for_download <> "", link_for_download , "No link for download")';
+
+-----
+
+
+
+
+
+
+================================
+Attempt at SEO for <a href="https://www.phpvs.com/php_form_generator/" title="phpmyedit cheat sheet">phpmyedit cheat sheet</a>
+List of recent visitor searches.
+================================
+php mysql form generate
+always show phpmyedit search
+application form sending to email html code generator
+auto form generation php
+autobuild form from mysql schema php
+automatic php form builder
+basic form creator for mysql table
+bookmark creator for php website
+calling mysql create view using php code
+cheat sheet phpmyedit
+creating a form php generator
+css forms and mysql
+data entry project php with mysql
+database changelog
+display php variable in html from phpmyedit
+dois triggers phpmyedit
+download free login form generator in php and mysql
+dynamically creates forms php based off table
+encryption types cheat sheet
+fancybox in phpmyedit
+fancybox phpmyedit
+filter required records in php
+filters phpmyedit
+form builder mysql
+form builder mysql free
+form creator php mysql
+formulario con lookup php
+free costom filed registration form builder php mysql
+free mysql form builder
+free php form builder
+free php form generator mysql
+free web form builder mysql
+generateur php mysql form
+generatore php per mysql
+generatori di codice php
+generatori di codici php
+generators power generation data entry sample
+hack phpmyedit
+hacking phpmyedit
+how to create forms in php mysql
+how to facilitate the user to design its own form and give him the auto generated code in php
+html form designer mysql
+http_accept_language utf8
+image upload phpmyedit
+input restrict triggers phpmyedit
+is there a form generator for innodb html
+isaphp
+js phpmyedit
+lookup hack phpmyedit
+lookups triggers phpmyedit
+multi form generator
+multi page form builder mysql
+mysql code creator
+mysql code editor
+mysql form builder free
+mysql form generator for phpmyadmin
+mysql php form builder free
+mysql php form generator gnu gpl
+mysql script generator
+mysql table editor form generator
+newest xss mysql html php form
+onchange triggers phpmyedit
+online php dynamic form generator
+online php mysql form generator
+online user creation form mysql php
+open source php form table generator
+php array as html table
+php code generator linux
+php form builder class documentation
+php form builder mysql open source
+php form creator mysql
+php form edit mysql record free
+php form editor
+php form generator
+php form generator from database
+php form generator mysql
+php form generator v3.0
+php forma de contact
+php forms mysql
+php formular primary key
+php formulár( mysql
+php generator
+php my edit column joining
+php my edit required select
+php myedit form value from other table
+php mysql code generator
+php mysql content editor
+php mysql form generator
+php mysql form maker
+php mysql forms builder versioning
+php mysql page builder script
+php mysql search form generator
+php programs using sakila
+phpformgenerator
+phpformgenerator php version
+phpmyadmin form generator
+phpmyadmin form generator download
+phpmyedit advanced table join
+phpmyedit another table id
+phpmyedit change language
+phpmyedit change logging
+phpmyedit css examples
+phpmyedit date picker
+phpmyedit default field values
+phpmyedit default value
+phpmyedit documentation
+phpmyedit features
+phpmyedit forum
+phpmyedit image
+phpmyedit image field
+phpmyedit image upload
+phpmyedit join
+phpmyedit list from table
+phpmyedit logtable user not recorded
+phpmyedit multiple unique key field
+phpmyedit overwrite
+phpmyedit search bar always active
+phpmyedit trigger example
+phpmyedit trigger files
+phpmyedit triggers
+phpmyedit tutorial
+phpmyedit.class.new.php
+sales table code html php
+select.value phpmyedit
+selectedindex phpmyedit
+table alias phpmyedit
+trigger validate unique phpmyedit
+triggers phpmyedit
+utilities to create forms and report with mysql
+web data entry form design for mysql
+web form builder freeware apache php

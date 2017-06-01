@@ -1,0 +1,134 @@
+If you use the Go To buttons, performance deteriorates substantially.
+Don't use Go To Page buttons.
+Don't use Go To Page buttons.
+
+
+// http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.navigation.html
+
+// if custom buttons in L mode fail to work as intended, try F mode
+
+-----
+
+// Graphic navigation example
+
+// GUD nav and TUD nav can essentially use the same settings:
+
+$opts['navigation'] = 'GUD';
+
+$opts['buttons']['L']['up'] = array('<<', '<', 'add', '>', '>>');
+
+$opts['buttons']['L']['down'] = $opts['buttons']['L']['up'];
+
+$opts['buttons']['F']['up'] = array('<<', '<', 'add', '>', '>>');
+
+$opts['buttons']['F']['down'] = $opts['buttons']['F']['up'];
+
+//$opts['buttons']['V']['up'] = array('change', 'cancel');
+
+$opts['buttons']['V']['up'] = array('add', '-change', '-copy', 'delete', 'cancel');
+
+$opts['buttons']['V']['down'] = $opts['buttons']['V']['up'];
+
+-----
+
+// post-initialize [] another button, e.g. as foo
+// which becomes available as $_POST['PME_sys_foo']
+
+$opts['buttons']['F']['up'][] = array('name' => 'foo', 'value' => 'Foo', 'css' => 'pme-foo', 'disabled' => false);
+
+-----
+
+// Text navigation example
+
+// GUD nav and TUD nav can essentially use the same settings:
+
+$opts['navigation'] = 'TUD';
+
+$opts['buttons']['L']['up'] = array('<<', '<', 'add', '>', '>>');
+
+$opts['buttons']['L']['down'] = $opts['buttons']['L']['up'];
+
+$opts['buttons']['F']['up'] = array('<<', '<', 'add', '>', '>>');
+
+$opts['buttons']['F']['down'] = $opts['buttons']['F']['up'];
+
+$opts['buttons']['V']['up'] = array('change', 'cancel');
+
+$opts['buttons']['V']['down'] = $opts['buttons']['V']['up'];
+
+-----
+
+Navigation style can be Text, Button, or Graphic.
+
+if(stristr(strtolower($opts['navigation']), 'b')){
+
+   $opts['buttons']['A']['up'] = array('save', 'more', 'cancel');
+   $opts['buttons']['A']['down'] = $opts['buttons']['A']['up'];
+
+   $opts['buttons']['C']['up'] = array('save', 'more', 'cancel');
+   $opts['buttons']['C']['down'] = $opts['buttons']['C']['up'];
+
+   $opts['buttons']['P']['up'] = array('save', 'cancel');
+   $opts['buttons']['P']['down'] = $opts['buttons']['P']['up'];
+
+   $opts['buttons']['D']['up'] = array('save', 'cancel');
+   $opts['buttons']['D']['down'] = $opts['buttons']['D']['up'];
+
+   $opts['buttons']['V']['up'] = array('change', 'cancel');
+   $opts['buttons']['V']['down'] = $opts['buttons']['V']['up'];
+
+   $opts['buttons']['L']['up'] = array('<<', '<', 'add', 'view', 'change', 'copy', 'delete', '>', '>>');
+   $opts['buttons']['L']['down'] = $opts['buttons']['L']['up'];
+
+   $opts['buttons']['F']['up'] = array('<<', '<', 'add', 'view', 'change', 'copy', 'delete', '>', '>>');
+   $opts['buttons']['F']['down'] = $opts['buttons']['F']['up'];
+
+}else{
+
+   // Text or Graphic
+
+   $opts['buttons']['L']['up'] = array('<<', '<', 'add', '>', '>>');
+
+   $opts['buttons']['L']['down'] = $opts['buttons']['L']['up'];
+
+   $opts['buttons']['F']['up'] = array('<<', '<', 'add', '>', '>>');
+
+   $opts['buttons']['F']['down'] = $opts['buttons']['F']['up'];
+
+   $opts['buttons']['V']['up'] = array('change', 'cancel');
+
+   $opts['buttons']['V']['down'] = $opts['buttons']['V']['up'];
+
+}
+
+-----
+
+The following clip is from phpMyEdit.class.php. With a large
+number of records in a table, usage of goto and goto_combo
+causes a negative performance hit.
+
+   var $default_buttons = array(
+         'L' => array('<<','<','add','view','change','copy','delete','>','>>','goto','goto_combo'),
+         'F' => array('<<','<','add','view','change','copy','delete','>','>>','goto','goto_combo'),
+         'A' => array('save','more','cancel'),
+         'C' => array('save','more','cancel'),
+         'P' => array('save', 'cancel'),
+         'D' => array('save','cancel'),
+         'V' => array('change','cancel')
+         );
+
+The class file furnished with MFG/sakila reads:
+
+   var $default_buttons = array(
+         'L' => array('<<','<','add','view','change','copy','delete','>','>>'),
+         'F' => array('<<','<','add','view','change','copy','delete','>','>>'),
+         'A' => array('save','more','cancel'),
+         'C' => array('save','more','cancel'),
+         'P' => array('save', 'cancel'),
+         'D' => array('save','cancel'),
+         'V' => array('change','cancel')
+         );
+
+If you absolutely must have Go To buttons, then restore
+'goto'  and 'goto_combo' to the $default_buttons array
+inside phpMyEdit.class.php.

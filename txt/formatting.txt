@@ -1,0 +1,39 @@
+
+// CONCAT TIME_FORMAT
+
+$opts['fdd']['cron_time'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '01:00:00',
+  'input'      => '',
+  'maxlen'     => 8,
+  'name'       => 'Cron Time',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 8,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sql|LFV'     => 'if(cron_time > "00:00:00", CONCAT(TIME_FORMAT(cron_time, "%h:%i %p")), "")', // Possible datemask replacement
+  'sort'       => true
+);
+// MySQL column 2: time
+// Possible default: date('H:i:s')
+
+
+// number_format
+
+$opts['fdd']['blk'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '0.0',
+  'input'      => '',
+  'maxlen'     => 9,
+  'number_format' => array(1, '.', ','),
+  'name'       => 'Blk',
+  'options'    => 'ACPVDFL',
+  'required'   => false,
+  'select'     => 'T',
+  'size|ACP'   => 7,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// MySQL column 3: real - float(7,1) unsigned
+

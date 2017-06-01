@@ -1,0 +1,36 @@
+/**
+ * phpMyEdit's List mode CSS sometimes needs to be different
+ * from CSS in other page modes (Add, Change, coPy, Delete).
+ **/
+/* extra spacing for phpMyEdit icons (view, change, copy, delete) */
+img.pme-navigation-0, img.pme-navigation-1{ margin: 0 5px 0 0; }
+input.pme-hide{ margin-right: 10px; }
+/* over-ride Bootstrap in List mode to keep boxes small */
+input.pme-filter, input.pme-filter-right-justify{ max-width: 72px; margin-right: 5px; }
+table, table.striped, table.pme-navigation{ margin: 0 0 15px 0; }
+/* phpMyEdit icons for view, change, copy, delete */
+td.pme-navigation-0, td.pme-navigation-1, th.pme-header{ white-space: nowrap; }
+/* over-ride Bootstrap CSS */
+th, td.pme-message, td.pme-stats, p.pme-message, td.pme-help-0, td.pme-help-1, td.pme-help-0-right-justify, td.pme-help-1-right-justify{
+	background-color: transparent;
+	color: #3a87ad;
+	text-align: left; 
+}
+th.pme-header-right-justify, td.pme-filter-right-justify, td.pme-cell-1-right-justify, td.pme-cell-0-right-justify{ text-align: right; }
+/* Bootstrap apparently omits background color for these search boxes */
+/*
+select, input{ background-color: #e5e5e5; color: #660000; }
+*/
+
+/* probably don't need these with bootstrap */
+/* td.pme-key-0-right-justify, td.pme-key-0, td.pme-key-1-right-justify, td.pme-key-1, td.pme-value-0-right-justify, td.pme-value-0, td.pme-value-1-right-justify, td.pme-value-1{ background-color: transparent; color: #000000; } */
+/*
+td.pme-filter, td.pme-filter-right-justify{ white-space: nowrap; }
+*/
+tr,td{ vertical-align: middle; }
+
+.btn-group{ margin-left:10px; }
+
+td.pme-filter, td.pme-filter-right-justify{ white-space: nowrap; }
+
+td { padding:5px; }

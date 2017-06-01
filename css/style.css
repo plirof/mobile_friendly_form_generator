@@ -1,0 +1,86 @@
+/**
+ * See also phpmyedit-list-mode.css + phpmyedit-other-mode.css which are
+ * conditionally included via /inc/header.php depending on phpmyedit page mode.
+ * Bootstrap recommends expressing sizes using rem, for better scalability.
+ * 10px = 0.625rem
+ * 12px = 0.75rem
+ * 14px = 0.875rem
+ * 16px = 1rem (base)
+ * 18px = 1.125rem
+ * 20px = 1.25rem
+ * 24px = 1.5rem
+ * 30px = 1.875rem
+ * 32px = 2rem
+ **/
+body { padding: 1.5rem 0;}
+/* Responsive: Portrait tablets and up. Remove padding from wrapping element since we kick in the grid classes here */
+@media screen and (min-width: 768px);
+.body-content { padding: 0 1.25rem; }
+.dh-pad { margin: 0 0 1.25rem 0; padding: 0.75rem 1rem; }
+.jumbotron { padding: 1.25rem; margin: 0 0 1.25rem 0; } 
+.card{ background-color: #fff; color: #000; }
+.card.sidebar-nav{ background-color: #f0f8ff; color: inherit; }
+/* Fix Google Maps canvas */
+/*.google-map-canvas,.google-map-canvas * { .box-sizing(content-box); } img { max-width: none; } */
+.suppress{ display: none; }
+/*.tab-pane{ padding: 1.25rem 1rem; } */
+code { white-space: normal; }
+/* optional wrapping element applied when no container is set (affects mobile devices more than monitors) */
+div.body-content { padding: 1rem; }
+footer{ text-align: center; }
+/* Bootstrap default font size for h1-h5 are gigantic */
+h1, .jumbotron h1{ margin-top: 0; font: bold 1.5rem arial,verdana,helvetica,sans-serif; }
+h2{ font: bold 1.125rem arial,verdana,helvetica,sans-serif; }
+h3{ font: bold 1rem arial,verdana,helvetica,sans-serif; }
+h4{ font: bold 0.875rem arial,verdana,helvetica,sans-serif; }
+h5{ font: bold 0.75rem arial,verdana,helvetica,sans-serif; }
+h6{ font: bold 0.625rem arial,verdana,helvetica,sans-serif; }
+img.lt{ border: none; clear: both; float: left; margin: 0 1.25rem 1.25rem 0; }
+img.rt{ border: none; clear: both; float: right; margin: 0 0 1.25rem 1.25rem; }
+pre { padding: 0.625rem; background-color:#f5f5f5; color:#000;}
+tr{ vertical-align: top; }
+/* 2015-08-30 scrolling button group example http://www.bootply.com/86790 */
+.scrollable-menu { height: auto; max-height: 200px; overflow-x: hidden; }
+/* Bootstrap 4.0 Beta - */
+@media print { .container { width: auto; } }
+.ctr-block{ margin-left: auto; margin-right: auto; text-align: center; }
+/* Alerts could use a border for enhanced impact */
+.alert-danger{ border: 1px solid #993333; }
+.alert-info{ border: 1px solid #333399; }
+.alert-success{ border: 1px solid #339933; }
+.alert-warning{ border: 1px solid #996633; }
+/* for use with: <div class="responsive-video"> */
+.responsive-video { position: relative; padding-bottom: 56.25%; padding-top: 60px; overflow: hidden; }
+.responsive-video iframe,.responsive-video object,.responsive-video embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+/*!
+* Datepicker for Bootstrap (minimized)
+* Original Idea: http://www.eyecon.ro/bootstrap-datepicker (Copyright 2012 Stefan Petre)
+* Updated by AymKdn (http://kodono.info - https://github.com/Aymkdn/Datepicker-for-Bootstrap)
+* Licensed under the Apache License v2.0
+* http://www.apache.org/licenses/LICENSE-2.0
+*/
+.datepicker { top: 0; left: 0; padding: 4px; margin-top: 1px; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; /*.dow { border-top: 1px solid #ddd !important; }*/}
+.datepicker:before { content: ''; display: inline-block; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 7px solid #ccc; border-bottom-color: rgba(0, 0, 0, 0.2); position: absolute; top: -7px; left: 6px; }
+.datepicker:after { content: ''; display: inline-block; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid #ffffff; position: absolute; top: -6px; left: 7px; }
+.datepicker > div { display: none; }
+.datepicker table { width: 100%; margin: 0; }
+.datepicker td, .datepicker th { text-align: center; width: 1.25rem; height: 1.25rem; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; }
+.datepicker td.day:hover { background: #eeeeee; cursor: pointer; }
+.datepicker td.old, .datepicker td.new {color: #999999;}.datepicker td.active, .datepicker td.active:hover {background-color: #006dcc;background-image: -moz-linear-gradient(top, #0088cc, #0044cc);background-image: -ms-linear-gradient(top, #0088cc, #0044cc);background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0044cc));background-image: -webkit-linear-gradient(top, #0088cc, #0044cc);background-image: -o-linear-gradient(top, #0088cc, #0044cc);background-image: linear-gradient(top, #0088cc, #0044cc);background-repeat: repeat-x;filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0088cc', endColorstr='#0044cc', GradientType=0);border-color: #0044cc #0044cc #002a80;border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);color: #fff;text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);}
+.datepicker td.active:hover,.datepicker td.active:hover:hover,.datepicker td.active:active,.datepicker td.active:hover:active,.datepicker td.active.active,.datepicker td.active:hover.active,.datepicker td.active.disabled,.datepicker td.active:hover.disabled,.datepicker td.active[disabled],.datepicker td.active:hover[disabled] {background-color: #0044cc;}
+.datepicker td.active:active,.datepicker td.active:hover:active,.datepicker td.active.active,.datepicker td.active:hover.active {background-color: #003399 \9;}
+.datepicker td span {display: block;width: 47px;height: 54px;line-height: 54px;float: left;margin: 2px;cursor: pointer;-webkit-border-radius: 4px;-moz-border-radius: 4px;border-radius: 4px;}
+.datepicker td span:hover {background: #eeeeee;}
+.datepicker td span.active {background-color: #006dcc;background-image: -moz-linear-gradient(top, #0088cc, #0044cc);background-image: -ms-linear-gradient(top, #0088cc, #0044cc);background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0044cc));background-image: -webkit-linear-gradient(top, #0088cc, #0044cc);background-image: -o-linear-gradient(top, #0088cc, #0044cc);background-image: linear-gradient(top, #0088cc, #0044cc);background-repeat: repeat-x;filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0088cc', endColorstr='#0044cc', GradientType=0);border-color: #0044cc #0044cc #002a80;border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);color: #fff;text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);}
+.datepicker td span.active:hover,
+.datepicker td span.active:active,
+.datepicker td span.active.active,
+.datepicker td span.active.disabled,
+.datepicker td span.active[disabled] {background-color: #0044cc;}
+.datepicker td span.active:active, .datepicker td span.active.active {background-color: #003399 \9;}
+.datepicker td span.old {color: #999999;}
+.datepicker th.switch {width: 145px;}
+.datepicker thead tr:first-child th {cursor: pointer;}
+.datepicker thead tr:first-child th:hover {background: #eeeeee;}
+.input-append.date .add-on i, .input-prepend.date .add-on i {display: block;cursor: pointer;width: 1rem;height: 1rem;}
+.dropdown-menu.datepicker { max-width:220px }

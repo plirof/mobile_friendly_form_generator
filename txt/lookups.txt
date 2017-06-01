@@ -1,0 +1,402 @@
+See also dummy_fields.txt
+
+$opts['fdd']['service_id'] = array(
+  'default'    => '',
+  'help|ACP'    => 'Numeric <a href="facility_events.php" target="_blank">Service ID</a> number',
+  'escape|V'  => false,
+  'input'      => '',
+  'maxlen'     => 9,
+  'name'       => 'Service Lookup',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size|ACP'   => 9,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values|V'     => array(
+    'table' => 'facility_events',
+    'column' => 'id',
+    'description' => array(
+      'columns' => array(0 => 'facility_id', 1 => 'date_', 2 => 'time_', 3 => 'headline', 4 => 'remarks'),
+      'divs'     => array(0 => '<br>', 1 => '<br>', 2 => '<br>', 3 => '<br>', 4 => '<br>'),
+      'filters' => 'deleted = "0" AND hidden = "0"',
+      'orderby' => array('0' => 'name')
+     )
+   )
+);
+
+// Look up the domain_name based on the domain_id stored in both tables
+
+$opts['fdd']['domain_id'] = array(
+  'default'    => '',
+  'input'      => '',
+  'name'       => 'Domain',
+  'options'    => 'ACPVDFL',
+  'sort'       => true,
+  'select'     => 'T',
+  'values'     => array(
+    'table' => 'dev_domains',
+    'column' => 'domain_id',
+    'description'=> array(
+       'columns' => array('0' => 'domain_name'),
+     ),
+    'filters'     => 'deleted = "0" AND hidden = "0"',
+    'orderby'     => 'domain_name'
+   )
+);
+// MySQL column 6: int - smallint(5) unsigned
+
+
+
+// Records the `contact_id` from the `contacts` table as `creditor` in the main table.
+// Displays a drop down list containing `company` names found in the `contacts` table.
+// Displays only those records categorized as a Creditor in the `contacts` table.
+// Sorts the list alphabetically.
+
+$opts['fdd']['creditor'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 6,
+  'name'       => 'Creditor',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'D',
+  'size|ACP'   => 6,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'   => array(
+    'table' => 'contacts',
+    'column' => 'contact_id',
+    'description'=> array(
+       'columns' => array('0' => 'company'),
+     ),
+    'filters'     => 'category = "Creditor" AND category <> ""',
+    'orderby'     => 'company'
+   )
+);
+// MySQL column 1: int - smallint(6)
+
+
+
+$opts['fdd']['page_id'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 5,
+  'name'       => 'ID',
+  'options'    => 'ACPVDFL',
+  'required'   => true,
+  'select'     => 'T',
+  'size|ACP'   => 5,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'   => array(
+      'table' => 'vs_content1b',
+      'column' => 'id',
+      'description'=> 'link'
+  )
+);
+
+$opts['fdd']['col_name'] = array(
+  'default'  => 'default',
+  'maxlen'   => 10,
+  'name'     => 'Title',
+  'select'   => 'T',
+  'sort'     => true,
+  'values'   => array(
+      'table' => 'other_table',
+      'column' => 'col_name2',
+      'description'=> 'name',
+      'orderby' => 'name'
+  )
+);
+
+$opts['fdd']['col_name'] = array(
+  'default'  => 'default',
+  'maxlen'   => 10,
+  'name'     => 'Title',
+  'select'   => 'T',
+  'sort'     => true,
+  'values'   => array(
+    'table' => 'other_table',
+    'column' => 'col_name2',
+    'description' => array(
+       'columns'  => array('0' => 'name', '1' => 'father_name', '2' => 'mother_name'),
+       'divs'     => array('0' => ' - ', '1' => ' - '),
+     ),
+     'orderby'=>'name'
+   )
+);
+
+
+$opts['fdd']['active'] = array(
+  'default'  => '3',
+  'maxlen'   => 4,
+  'name'     => 'Active/Passive',
+  'required' => true,
+  'select'   => 'D',
+  'sort'     => true,
+  'values' => array(
+     'table'       => 'tbl_labels',
+     'column'      => 'label_id',
+     'description' => 'label_name',
+     'filters'     => 'label_group = "2" ')
+);
+
+
+
+$opts['fdd']['registrar'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 30,
+  'name'       => 'Registrar',
+  'tab|C'    => 'Registrar',
+  'options'    => 'ACPVD',
+  'required'   => false,
+  'select'     => '',
+  'size|ACP'   => 30,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'     => array(
+    'table'       => 'registrars',
+    'column'      => 'registrar_id',
+    'description' => array(
+      'columns'    => array('registrar_name')
+    )
+  )
+);
+
+
+
+$opts['fdd']['help_category_id'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen|ACP' => 5,
+  'name'       => 'Help Category Id',
+  'options'    => 'ACPVDFL',
+  'select'     => 'D',
+  'size|ACP'   => 5,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'     => array(
+    'table' => 'help_category',
+    'column' => 'help_category_id',
+    'description' => array(
+      'columns' => array('0' => 'name')
+     )
+   )
+);
+
+
+// This example (by another user) will reportedly create
+// a one to many hyperlink to a single client record.
+
+$opts['fdd']['contact'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Attached Name or Case',
+  'input'      => '',
+  'maxlen|ACP' => 225,
+  'name'       => 'Attachment',
+  'options'    => 'ACPVDFL',
+  'select'     => 'M',
+  'size|ACP'       => 60,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+
+$opts['fdd']['contact']['values']['table'] = 'client';
+
+$opts['fdd']['contact']['values']['column'] = 'id';
+
+$opts['fdd']['contact']['values']['description']['divs'][-1] = '<a href="my_addressbook.php?PME_sys_fl=0&PME_sys_fm=0&PME_sys_sfn[0]=1&PME_sys_operation=PME_op_Change&PME_sys_rec=';
+
+$opts['fdd']['contact']['values']['description']['columns'][0] = 'id';
+
+$opts['fdd']['contact']['values']['description']['divs'][0] = '" target="blank">';
+
+$opts['fdd']['contact']['values']['description']['columns'][1] = 'client';
+
+$opts['fdd']['contact']['values']['description']['divs'][1] = '</a>';
+
+$opts['fdd']['contact']['values']['orderby'] = 'client';
+
+################################################################################
+
+// 2012-02-23 09:10
+
+Lookup values in a table containing multiple keys and values:
+
+CREATE TABLE IF NOT EXISTS `az_dd_list` (
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `key1` char(40) NOT NULL COMMENT 'normally a table name',
+  `value1` char(255) NOT NULL COMMENT 'normally a value in SELECT box',
+  PRIMARY KEY (`id`),
+  KEY `idx_key1` (`key1`),
+  KEY `idx_value1` (`value1`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+INSERT INTO `az_dd_list` (`id`, `key1`, `value1`) VALUES
+(1, 'origin', 'Africa'),
+(2, 'origin', 'Afghanistan'),
+(3, 'origin', 'Europe'),
+(4, 'origin', 'China'),
+(5, 'origin', 'Egypt'),
+(6, 'origin', 'France'),
+(7, 'origin', 'India'),
+(8, 'origin', 'Iran - Persia'),
+(9, 'origin', 'Israel'),
+(10, 'origin', 'Mexico'),
+(11, 'origin', 'Morocco'),
+(12, 'origin', 'Navajo'),
+(13, 'origin', 'Nepal'),
+(14, 'origin', 'Pakistan'),
+(15, 'origin', 'Caucasus'),
+(16, 'origin', 'Spain'),
+(17, 'origin', 'Tibet'),
+(18, 'origin', 'Turkestan'),
+(19, 'origin', 'Turkey'),
+(20, 'origin', 'USA'),
+(21, 'origin', 'Uzbekistan'),
+(22, 'origin', 'Ukraine'),
+(23, 'design', 'Abadeh'),
+(24, 'design', 'Abusson'),
+(25, 'design', 'Afghan'),
+(26, 'design', 'Afshar'),
+(27, 'design', 'Agra'),
+(28, 'design', 'Anatolian'),
+(29, 'design', 'Aras'),
+(30, 'design', 'Avar'),
+(31, 'design', 'Azeri'),
+(32, 'design', 'Bag'),
+(33, 'design', 'Bagface'),
+(34, 'design', 'Bakhtiari'),
+(35, 'design', 'Bakshaish'),
+(36, 'design', 'Baluch'),
+(37, 'design', 'Bergama'),
+(38, 'design', 'Beshir'),
+(39, 'design', 'Besserabian'),
+(40, 'design', 'Bibikabad'),
+(41, 'design', 'Bidjar'),
+(42, 'design', 'Bokara'),
+(43, 'design', 'Borjalou'),
+(44, 'design', 'Borjaloukazak'),
+(45, 'design', 'Caucasian'),
+(46, 'design', 'Chinese'),
+(47, 'design', 'Daghestan'),
+(48, 'design', 'Doroksh'),
+(49, 'design', 'Elmagagh'),
+(50, 'design', 'Elvan'),
+(51, 'design', 'Enjeles'),
+(52, 'design', 'Ensi'),
+(53, 'design', 'Farahan'),
+(54, 'design', 'Fethiye'),
+(55, 'design', 'Gabbeh'),
+(56, 'design', 'Genje'),
+(57, 'design', 'Ghadjeri'),
+(58, 'design', 'Ghiordes'),
+(59, 'design', 'Hamadan'),
+(60, 'design', 'Herat'),
+(61, 'design', 'Hereke'),
+(62, 'design', 'Heriz'),
+(63, 'design', 'Isfehan'),
+(64, 'design', 'Jafkurd'),
+(65, 'design', 'Jajim'),
+(66, 'design', 'Joshoegan'),
+(67, 'design', 'Jozan'),
+(68, 'design', 'Karabaugh'),
+(69, 'design', 'Karaja'),
+(70, 'design', 'Kashan'),
+(71, 'design', 'Kashkuli'),
+(72, 'design', 'Kazak'),
+(73, 'design', 'Kazvin'),
+(74, 'design', 'Kerman'),
+(75, 'design', 'Khamseh'),
+(76, 'design', 'Khorasan'),
+(77, 'design', 'Khorjin'),
+(78, 'design', 'Khotan'),
+(79, 'design', 'Konya'),
+(80, 'design', 'Kordi'),
+(81, 'design', 'Kuba'),
+(82, 'design', 'Kurdish'),
+(83, 'design', 'Lenkoran'),
+(84, 'design', 'Lori'),
+(85, 'design', 'Mahal'),
+(86, 'design', 'Malayar'),
+(87, 'design', 'Mamluk'),
+(88, 'design', 'Mashhad'),
+(89, 'design', 'Mazlaghan'),
+(90, 'design', 'Mehraban'),
+(91, 'design', 'Meshkin'),
+(92, 'design', 'Mieghan'),
+(93, 'design', 'Ninghsia'),
+(94, 'design', 'Oushak'),
+(95, 'design', 'Qashqai'),
+(96, 'design', 'Qum'),
+(97, 'design', 'Samarghand'),
+(98, 'design', 'Sarouk'),
+(99, 'design', 'Savonneri'),
+(100, 'design', 'Senneh'),
+(101, 'design', 'Seraband'),
+(102, 'design', 'Serapi'),
+(103, 'design', 'Shahsevan'),
+(104, 'design', 'Sharkoy'),
+(105, 'design', 'Shirvan'),
+(106, 'design', 'Sivas'),
+(107, 'design', 'Sparta'),
+(108, 'design', 'Sultanabad'),
+(109, 'design', 'Suzani'),
+(110, 'design', 'Tabriz'),
+(111, 'design', 'Taimani'),
+(112, 'design', 'Tekke'),
+(113, 'design', 'Traditional'),
+(114, 'design', 'Turkoman'),
+(115, 'design', 'Uzbek'),
+(116, 'design', 'Veramin'),
+(117, 'design', 'Verneh'),
+(118, 'design', 'Yastik'),
+(119, 'design', 'Yomut'),
+(120, 'design', 'Yuncu'),
+(121, 'design', 'Zieglermahal'),
+(122, 'design', 'Zili'),
+(123, 'type', 'Dhurrie'),
+(124, 'type', 'Embroidery'),
+(125, 'type', 'Kilim'),
+(126, 'type', 'Misc'),
+(127, 'type', 'Navjo'),
+(128, 'type', 'Patchwork'),
+(129, 'type', 'Pictorial'),
+(130, 'type', 'Pillow'),
+(131, 'type', 'Prayer'),
+(132, 'type', 'Saddlebag'),
+(133, 'type', 'Soumak'),
+(134, 'type', 'Soumakbag'),
+(135, 'type', 'Textile'),
+(136, 'type', 'Tibetan'),
+(137, 'shape', 'Galarey Size'),
+(138, 'shape', 'Large Size'),
+(139, 'shape', 'Oval'),
+(140, 'shape', 'Over Size'),
+(141, 'shape', 'Palace Size'),
+(142, 'shape', 'Room Size'),
+(143, 'shape', 'Round'),
+(144, 'shape', 'Runner');
+
+// Lookup values in az_dd_list where key1 = "origin"
+
+$opts['fdd']['origin'] = array(
+  'default'    => '',
+  'input'      => '',
+  'maxlen'     => 20,
+  'name'       => 'Origin',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'size'       => 20,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true,
+  'values'     => array(
+    'table' => 'az_dd_list',
+    'column' => 'value1',
+    'filters'     => 'key1 = "origin"',
+    'orderby'     => 'value1'
+   )
+);
+
+################################################################################

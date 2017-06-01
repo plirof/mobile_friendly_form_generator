@@ -1,0 +1,178 @@
+Determining the page mode (Add, View, Change, coPy, Delete, List) can be
+very tricky, depending on how the user arrived at the current page mode.
+
+-----
+
+Debug to make certain things are working as planned using:
+//ksort($_REQUEST);
+$print_r_text = preg_replace('/\n/s', "\r\n", print_r($_REQUEST, true));
+echo !stristr($print_r_text, ']') ? '' : "\n".'<p>$_REQUEST</p><pre>'.htmlspecialchars($print_r_text).'</pre>';
+
+-----
+
+$_REQUEST['PME_sys_operation'] may or may not be set
+
+If the above is not set then one of the following may be set.
+
+$_REQUEST['PME_sys_canceladd']    (if set) returns Cancel
+$_REQUEST['PME_sys_cancelchange'] (if set) returns Cancel
+$_REQUEST['PME_sys_cancelcopy']   (if set) returns Cancel
+$_REQUEST['PME_sys_canceldelete'] (if set) returns Cancel
+$_REQUEST['PME_sys_cancelview']   (if set) returns Cancel
+
+$_REQUEST['PME_sys_moreadd']      (if set) returns More
+
+$_REQUEST['PME_sys_morechange']   (if set) returns Apply
+
+$_REQUEST['PME_sys_saveadd']      (if set) returns Save
+$_REQUEST['PME_sys_savechange']   (if set) returns Save
+$_REQUEST['PME_sys_savecopy']     (if set) returns Save
+$_REQUEST['PME_sys_savedelete']   (if set) returns Save
+
+-----
+
+// set a variable which could be used with DATE fields
+// in order to display (or suppress) a datepicker popup.
+// $date_picker_mode_status is impacted by Apply and More buttons
+// and to be displayed in Add, Change, coPy modes.
+
+$date_picker_mode_status = 0;
+
+if(array_key_exists('PME_sys_operation', $_REQUEST)){
+
+	switch($_REQUEST['PME_sys_operation'])
+	{
+		Case 'Add':
+		Case 'Change': // when change is accessed from View mode
+		Case 'PME_op_Add':
+		Case 'PME_op_Apply':
+		Case 'PME_op_Change': // when change is accessed from List mode
+		Case 'PME_op_Copy':
+		Case 'PME_sys_moreadd':
+			$date_picker_mode_status = 1;
+			break;
+		default:
+			break;
+	}
+
+}elseif((isset($_REQUEST['PME_sys_morechange']) && $_REQUEST['PME_sys_morechange'] == 'Apply') || ($_REQUEST['PME_sys_moreadd']) && $_REQUEST['PME_sys_moreadd'] == 'More')){
+
+	$date_picker_mode_status = 1;
+
+}
+
+-----
+
+
+if(!isset($_REQUEST['PME_sys_operation']) && !isset($_REQUEST['PME_sys_moreadd']) && !isset($_REQUEST['PME_sys_morechange'])){
+
+   echo "\n".'<table class="container"><tr><td>Company Filter</td><td>';
+
+   for($i=65; $i<91; ++$i) {
+
+      echo "\n".'<a href="'.basename($_SERVER["PHP_SELF"]).'?fl2='.chr($i).'">'.chr($i).'</a>';
+
+      echo ($i < 90) ? ' - '."\n" : "\n";
+
+   }
+
+   echo "\n".'</td></tr>';
+
+   echo "\n".'<tr><td>Last Name Filter</td><td>';
+
+   for($i=65; $i<91; ++$i) {
+
+      echo "\n".'<a href="'.basename($_SERVER["PHP_SELF"]).'?fl3='.chr($i).'">'.chr($i).'</a>';
+
+      echo ($i < 90) ? ' - '."\n" : "\n";
+
+   }
+
+   echo "\n".'</td></tr><tr><td colspan="2"><a href="'.basename($_SERVER["PHP_SELF"]).'?fl2=&fl3=">List All</a></td></tr></table>';
+
+}
+
+
+-----  
+
+// An attempt to
+// 1. apply $_SESSION['user_id'] to fields posted_by_id & last_update_by_id
+// 2. manage the `deleted` field status
+// 3. prevent Add mode, normally handled via custom user registration form
+
+if(isset($_REQUEST['PME_sys_operation'])){
+
+   // PME_sys_operation: Add, PME_op_Add, Change, PME_op_Change, PME_op_Copy, PME_op_Delete, PME_op_View
+
+	switch($_REQUEST['PME_sys_operation'])
+	{
+		Case 'Add':
+		Case 'PME_op_Add':
+			$opts['cgi']['overwrite']['deleted'] = '0';
+			$opts['cgi']['overwrite']['posted_by_id'] = $_SESSION['user_id'];
+			break;
+
+		Case 'Change':
+		Case 'PME_op_Change':
+			$opts['cgi']['overwrite']['deleted'] = '0';
+			$opts['cgi']['overwrite']['last_update_by_id'] = $_SESSION['user_id'];
+			break;
+
+		Case 'PME_op_Copy':
+			$opts['cgi']['overwrite']['deleted'] = '0';
+			$opts['cgi']['overwrite']['posted_by_id'] = $_SESSION['user_id'];
+			break;
+
+		Case 'PME_op_Delete':
+			$opts['cgi']['overwrite']['deleted'] = '1';
+			$opts['cgi']['overwrite']['last_update_by_id'] = $_SESSION['user_id'];
+			break;
+
+		default:
+			// null
+			break;
+	}
+
+}
+
+// PME_sys_moreadd: More
+
+if(isset($_REQUEST['PME_sys_moreadd']) && $_REQUEST['PME_sys_moreadd'] == 'More'){
+	$opts['cgi']['overwrite']['deleted'] = '0';
+	$opts['cgi']['overwrite']['posted_by_id'] = $_SESSION['user_id'];
+}
+
+// PME_sys_morechange: Apply
+
+if(isset($_REQUEST['PME_sys_morechange']) && $_REQUEST['PME_sys_morechange'] == 'More'){
+	$opts['cgi']['overwrite']['deleted'] = '0';
+	$opts['cgi']['overwrite']['posted_by_id'] = $_SESSION['user_id'];
+}
+
+if(array_key_exists('PME_sys_moreadd', $_REQUEST) || (isset($_REQUEST['PME_sys_operation']) && $_REQUEST['PME_sys_operation'] == 'Add')){
+	$opts['cgi']['overwrite']['deleted'] = '0';
+}
+
+if(isset($_REQUEST['PME_sys_operation']) && $_REQUEST['PME_sys_operation'] == 'Add'){
+
+	die('Add function disabled (users must Register, or be created by copying the profile of an existing user and editing the user name, password, user level, etc.)');
+
+}
+
+if(isset($_REQUEST['PME_sys_moreadd']) && $_REQUEST['PME_sys_moreadd'] == 'More'){
+
+	die('Add function disabled (users must Register, or be created by copying the profile of an existing user and editing the user name, password, user level, etc.)');
+
+}
+
+if(isset($_REQUEST['PME_op_Copy']) && $_SESSION['user_level'] < 500){
+
+	die('Add function disabled (users must Register, or be created by copying the profile of an existing user and editing the user name, password, user level, etc.)');
+
+}
+
+if(!empty($date_picker_mode_status) && $warnings = mysqli_get_warnings($opts['dbh'])){
+
+   printf('<p class="red">Warnings: %s</p>', htmlentities(implode(', ', $warnings)));
+
+} 

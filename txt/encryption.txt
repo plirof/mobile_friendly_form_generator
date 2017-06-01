@@ -1,0 +1,69 @@
+// Two-way encryption example using the MySQL AES_DECRYPT() function.
+
+// Store the salt variable securely in a related include file.
+// Or initiate using .htaccess which is unlikely to ba accessible:
+// SetEnv MY_SALT abcdef123
+// The above in .htaccess should produce global $_SERVER['MY_SALT']
+
+// Otherwise set your salt in a single file which is included by all phpMyEdit forms.
+
+$salt = 'abcdef123';
+
+// $_SESSION['sess_user_level'] is a variable used to suppress the display
+// of the `my_password` field unless the logged-in user has a user level of 9.
+
+if($_SESSION['sess_user_level'] == 9){
+
+   $opts['fdd']['my_password'] = array(
+     'default'    => '',
+     'name'       => 'My Password',
+     'options'    => 'ACPVD',
+     'sort'       => false,
+     'sql|ACPVD'  => 'if(my_password <> "", AES_DECRYPT(my_password, "'.$salt.'"), "")',
+     'sqlw'       => 'AES_ENCRYPT(TRIM("$val_as"), "'.$salt.'")'
+   );
+
+   // MySQL column type `my_password` is tinyblob
+
+}
+
+################################################################################
+
+// One way encryption with MySQL's MD5() function.
+
+if($_SESSION['sess_user_level'] == 9){
+
+   $opts['fdd']['user_pass'] = array(
+     'default'    => '',
+     'input'      => 'W',
+     'maxlen'     => 60,
+     'name'       => 'User Pass',
+     'options'    => 'ACPVD',
+     'required'   => true,
+     'select'     => 'T',
+     'size|ACP'   => 60,
+     'sqlw'       => 'IF(user_pass = $val_qas, $val_qas, MD5($val_qas))',
+     'sort'       => $sort
+   );
+   // MySQL column type varchar(60)
+
+}
+
+################################################################################
+
+As regards security of the generated forms and data, most users employ their
+own Log In system or else use .htaccess to permission various folders.
+
+I knew someone who had a simple solution of minimal security for his online data.
+He was using the Firefox browser. He installed the add-on User Agent Switcher.
+He created a new user agent profile consisting of a random 64-character string.
+In his phpMyEdit script, $_SERVER['HTTP_USER_AGENT'] is evaluated to conditionally
+increase the default privileges from VFL to ACPVDFL.
+
+This person did not have a dedicated IP address at home or else he could have
+used $_SERVER['REMOTE_ADDR'] to conditionally elevate privileges.
+
+The above was a temporary fix, until such time as a secure Log In system
+could be implemented.
+
+

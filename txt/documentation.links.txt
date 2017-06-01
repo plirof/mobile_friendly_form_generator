@@ -1,0 +1,142 @@
+Database connection
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.general.html
+opts hn
+opts un
+opts pw
+opts db
+opts tb
+opts dbh optional
+
+Unique key
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.unique-key.html
+opts key
+opts key_type
+
+Common options
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.common-options.html
+opts page_name
+opts inc
+opts multiple
+opts display ( form, num_pages, num_records, query, sort, tabs, time )
+opts url (images)
+opts execute (1)
+
+Permission options
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.permission-options.html
+opts options ACPVDFLI
+
+Sorting
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.sorting.html
+opts sort_field one field name or an array of field names
+
+Navigation and buttons
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.navigation.html
+opts navigation
+opts buttons
+
+Filters
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.filters.html
+opts filters
+
+Triggers
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.triggers.html
+opts triggers
+
+Logging user actions
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.logging.html
+opts logtable
+opts notify
+
+Languages
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.languages.html
+opts language possible footer links to alternate language selections
+
+CGI variables
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.cgi-variables.html
+opts cgi append
+opts cgi overwrite
+opts cgi persist
+opts cgi prefix
+
+Javascript and DHTML
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.js-and-dhtml.html
+opts dhtml
+opts js
+--multiple forms on one page? not me!
+
+CSS classes policy
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.css.html
+opts css - prefix page_type position divider separator
+
+Fields options
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.fields.html
+fdd overview
+
+Basic field options
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.basic-options.html
+fdd css
+fdd help|ACP ucwords/upper/lower
+fdd input
+fdd name ucwords/upper/lower
+fdd options ACPVDFLI, field type, auto_increment, timestamp, by name, etc
+fdd select SET, ENUM, T, N
+
+Booleans
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.fields.booleans.html
+fdd escape is generally only set true if the field contains HTML markup
+fdd sort is generally set false if the column type is TEXT/BLOB
+fdd strip_tags false by default; sometimes strip_tags|LF' => true is preferable if the field contains HTML markup
+
+JavaScript validation
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.javascript-validation.html
+fdd js required [be sure to define a hint]
+fdd js regexp [0-9] is conditionally applied herein to column type INT
+fdd js hint generally omit auto_increment, NULL; problematic if applied to all fields
+
+Input restrictions
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.input-restrictions.html
+fdd values
+fdd values lookup
+fdd values2
+joining
+
+Output control
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.output-control.html
+fdd colattrs
+fdd cols textarea
+fdd datemask
+fdd mask
+fdd maxlen
+fdd nowrap
+fdd number_format
+fdd rows textarea
+fdd size|F
+fdd strftimemask
+fdd trimlen|ACP
+
+URL linking
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.url-linking.html
+fdd URL
+fdd URLdisp
+fdd URLprefix (legacy)
+fdd URLtarget
+
+SQL expressions
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.fields.sql.html
+fdd sql
+fdd sqlw
+fdd sqlw MD5
+
+PHP expressions
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.fields.php.html
+php
+
+TABs feature
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.tabs-feature.html
+fdd tab
+
+Options variability
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.options-variability.html
+fdd trimlen
+fdd trimlen|LF
+

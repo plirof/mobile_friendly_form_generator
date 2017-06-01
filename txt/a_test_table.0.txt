@@ -1,0 +1,339 @@
+<?php
+
+// Bookmark: generator.steps.php at line 533
+
+/*
+ * Database: hockus1_001
+ * Table: a_test_table
+ * Column count: 12
+ * Filename: draft.hockus1_001.a_test_table.0.php
+ * Created Thu, 02 Apr 2015 17:36:01 -0600
+ * Primary key: smallint_column
+ * Null columns: varchar_column
+ * Key columns: flag_hidden_enum, deleted
+ * MySQL comment for smallint_column: comment for smallint_column
+ * MySQL comment for varchar_column: comment for varchar_column
+ * MySQL comment for email_varchar_column: enter an email address e.g. none@foo.net
+ * MySQL comment for http_varchar_column: Enter a domain name e.g. google.com
+ * MySQL comment for float_column: comment for float_column
+ * MySQL comment for date_column: comment for date_column
+ * MySQL comment for enum_column: comment for enum_column
+ * MySQL comment for set_column: comment for set_column
+ * MySQL comment for text_column: comment for text_column
+ * MySQL comment for timestamp_column: comment for timestamp_column
+ * MySQL comment for flag_hidden_enum: comment for flag_hidden_enum
+ * MySQL comment for deleted: comment for deleted
+ * All columns: smallint_column, varchar_column, email_varchar_column, http_varchar_column,
+float_column, date_column, enum_column, set_column, text_column,
+timestamp_column, flag_hidden_enum, deleted
+*/
+
+// Bookmark: tinyMCE options set in generator.steps.php at line 633
+$tinymce_include_file = ''; // normally empty/unused
+
+// Bookmark: header.php Bootstrap layout options generator.steps.php at line 656
+
+$omit_div_container = 0; // [0|1] - default 0, set 1 for a 100%-wide layout in List mode (over-ridden around line 383 of pme.config.php for modes AVCPD)
+
+// Bookmark: generator.steps.php at line 664
+
+$opts['tb'] = 'a_test_table';
+
+$sn = 0; // server number
+
+require_once('inc/pme.config.php'); // options, db handle, and header
+
+require_once('inc/header.php'); // header
+
+//echo '<h2 class="text-info">'.$opts['db'].'.'.$opts['tb'].'</h2>'."\n";
+
+$opts['sort_field'] = array('smallint_column');
+
+$opts['key'] = 'smallint_column'; // primary key
+
+$opts['key_type'] = 'smallint';
+
+$opts['options'] = 'ACPVDFL';
+
+// Bookmark: generator.steps.php at line 786
+// Example of persistent variables
+// $opts['cgi']['persist'] = array('sn' => $sn);
+
+$opts['filters'] = 'PMEtable0.deleted = "0"'; // AND PMEtable0.hidden = "0";
+
+$opts['triggers']['delete']['before'] = 'inc/triggers/mark_as_deleted.TDB.php';
+
+
+// echo empty($header_operation_label) ? '' : "\n".'<p class="label label-info">'.$header_operation_label.'</p>'."\n";
+
+// Begin phpMyEdit column array compilation in generator.steps.php at line 1045
+
+// column 0: `smallint_column` smallint(5)
+// flags: auto_increment
+// comment: comment for smallint_column
+
+$opts['fdd']['smallint_column'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'Limit 5 digits',
+  'input'      => 'R',
+  'name'       => 'Smallint Column',
+  'options'    => 'VD', // to display in List mode, or set VDFL
+  'select'     => 'T',
+  'size'       => 5,
+  'sort'       => true
+);
+// If the tab feature is implemented, the first column must have a tab
+// $opts['fdd']['smallint_column']['tab|ACP'] = 'Smallint Column';
+
+
+// column 1: `varchar_column` varchar(255)
+// comment: comment for varchar_column
+
+$opts['fdd']['varchar_column'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 255 characters',
+  'input'      => '',
+  'maxlen|ACP' => 255,
+  'name'       => 'Varchar Column',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 72,
+  'sqlw'       => 'IF($val_qas = "", NULL, $val_qas)',
+  'sort'       => true
+);
+$opts['fdd']['varchar_column']['js']['required'] = true;
+$opts['fdd']['varchar_column']['js']['hint'] = 'An entry is required for Varchar Column';
+
+
+// column 2: `email_varchar_column` varchar(255)
+// comment: enter an email address e.g. none@foo.net
+
+$opts['fdd']['email_varchar_column'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 255 characters',
+  'input'      => '',
+  'maxlen|ACP' => 255,
+  'name'       => 'Email Varchar Column',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 72,
+  'sqlw'       => 'TRIM("$val_as")',
+  'URL'        => 'mailto:$value',
+  'sort'       => true
+);
+$opts['fdd']['email_varchar_column']['js']['required'] = true;
+$opts['fdd']['email_varchar_column']['js']['hint'] = 'An entry is required for Email Varchar Column';
+
+
+// column 3: `http_varchar_column` varchar(255)
+// comment: Enter a domain name e.g. google.com
+
+$opts['fdd']['http_varchar_column'] = array(
+  'default'    => '',
+  'help|ACP'   => 'Limit 255 characters',
+  'input'      => '',
+  'maxlen|ACP' => 255,
+  'name'       => 'Http Varchar Column',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 72,
+  'sqlw'       => 'TRIM("$val_as")',
+  'URL'        => 'http://$value',
+  'URLtarget'  => '_blank',
+//  'URLdisp'    => 'Visit',
+  'sort'       => true
+);
+$opts['fdd']['http_varchar_column']['js']['required'] = true;
+$opts['fdd']['http_varchar_column']['js']['hint'] = 'An entry is required for Http Varchar Column';
+
+
+// column 4: `float_column` float(8,2)
+// comment: comment for float_column
+
+$opts['fdd']['float_column'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '1.23',
+  'help|ACP'   => 'Limit 8 digits',
+  'input'      => '',
+  'maxlen|ACP' => 11,
+  'number_format|VDFL' => array(2, '.', ','),
+  'name'       => 'Float Column',
+  'options'    => 'ACPVDFL',
+  'select'     => 'T',
+  'size'       => 8,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['float_column']['js']['required'] = true;
+// $opts['fdd']['float_column']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['float_column']['js']['hint'] = 'An entry is required for Float Column';
+
+
+// column 5: `date_column` date
+// comment: comment for date_column
+
+$opts['fdd']['date_column'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'YYYY-MM-DD',
+  'input'      => '',
+  'maxlen|ACP' => 10,
+  'name'       => 'Date Column',
+  'options'    => 'ACPVD',
+  'select'     => 'N',
+  'size'       => 10,
+  'sqlw'       => 'TRIM("$val_as")',
+//  'sql|VFL'     => 'if(float_column > "", CONCAT(DATE_FORMAT(float_column, "%a %b %e %Y")), "")',
+  'sort'       => true
+);
+// $opts['fdd']['date_column']['js']['required'] = true;
+// $opts['fdd']['date_column']['js']['regexp'] = '/^[1-2]{1}[0-9]{3}-[0-1]{1}[0-9]{1}-[0-3]{1}[0-9]{1}$/';
+// $opts['fdd']['date_column']['js']['hint'] = 'An entry is required for Date Column';
+
+
+// column 6: `enum_column` enum('0','1','2','3','4','5')
+// comment: comment for enum_column
+
+$opts['fdd']['enum_column'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => 'Select',
+  'input'      => '',
+  'maxlen|ACP' => 1,
+  'name'       => 'Enum Column',
+  'options'    => 'ACPVD',
+  'select'     => 'D',
+  'sqlw'       => 'TRIM("$val_as")',
+  'values'     => array('0','1','2','3','4','5'), 
+  'sort'       => true
+);
+// $opts['fdd']['enum_column']['js']['required'] = true;
+// $opts['fdd']['enum_column']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['enum_column']['js']['hint'] = 'An entry is required for Enum Column';
+
+
+// column 7: `set_column` set('a','b','c')
+// comment: comment for set_column
+
+$opts['fdd']['set_column'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'Select',
+  'input'      => '',
+  'maxlen|ACP' => 5,
+  'name'       => 'Set Column',
+  'options'    => 'ACPVD',
+  'select'     => 'M',
+  'sqlw'       => 'TRIM("$val_as")',
+  'values'     => array('a','b','c'), 
+  'sort'       => true
+);
+// $opts['fdd']['set_column']['js']['required'] = true;
+// $opts['fdd']['set_column']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['set_column']['js']['hint'] = 'An entry is required for Set Column';
+
+
+// column 8: `text_column` text
+// comment: comment for text_column
+
+$opts['fdd']['text_column'] = array(
+  'default'    => '',
+  'escape|VFL' => false, // set true if the column contains HTML markup
+  'help|ACP'   => 'Limit 65,535 characters',
+  'input'      => '',
+  'maxlen|ACP' => 65535,
+  'name'       => 'Text Column',
+  'options'    => 'ACPVD',
+  'select'     => 'T',
+  'sqlw'       => 'TRIM("$val_as")',
+//  'strip_tags|FL' => true,
+  'textarea'   => array('rows' => 10, 'cols' => 90),
+  'trimlen|FL' => 50,
+  'sort'       => false
+);
+// $opts['fdd']['text_column']['js']['required'] = true;
+// $opts['fdd']['text_column']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['text_column']['js']['hint'] = 'An entry is required for Text Column';
+
+
+// column 9: `timestamp_column` timestamp
+// flags: on, update, CURRENT_TIMESTAMP
+// comment: comment for timestamp_column
+
+$opts['fdd']['timestamp_column'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => '',
+  'help|ACP'   => 'Timestamp',
+  'input'      => 'R',
+  'maxlen|ACP' => 19,
+  'name'       => 'Timestamp Column',
+  'options'    => 'VDFL',
+  'select'     => 'N',
+  'size'       => 19,
+  'sqlw'       => 'TRIM("$val_as")',
+  'sort'       => true
+);
+// $opts['fdd']['timestamp_column']['js']['required'] = true;
+// $opts['fdd']['timestamp_column']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['timestamp_column']['js']['hint'] = 'An entry is required for Timestamp Column';
+
+
+// column 10: `flag_hidden_enum` enum('0','1')
+// comment: comment for flag_hidden_enum
+
+$opts['fdd']['flag_hidden_enum'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => 'Select',
+  'input'      => '',
+  'maxlen|ACP' => 1,
+  'name'       => 'Flag Hidden Enum',
+  'options'    => 'ACPVD',
+  'select'     => 'D',
+  'sqlw'       => 'TRIM("$val_as")',
+  'values'     => array('0','1'), 
+  'sort'       => true
+);
+// $opts['fdd']['flag_hidden_enum']['js']['required'] = true;
+// $opts['fdd']['flag_hidden_enum']['js']['regexp'] = '/^[a-zA-Z]*$/'; // modify REGEXP to meet your needs
+// $opts['fdd']['flag_hidden_enum']['js']['hint'] = 'An entry is required for Flag Hidden Enum';
+
+
+// column 11: `deleted` enum('0','1')
+// comment: comment for deleted
+
+$opts['fdd']['deleted'] = array(
+  'css'        => array('postfix' => 'right-justify'),
+  'default'    => 0,
+  'help|ACP'   => 'Select',
+  'input'      => '',
+  'maxlen|ACP' => 1,
+  'name'       => 'Deleted',
+  'options'    => 'ACP',
+  'select'     => 'D',
+  'sqlw'       => 'TRIM("$val_as")',
+  'values2'    => array('0' => 'No', '1' => 'Yes'),
+  'sort'       => true
+);
+// Bookmark: omit ['js']['required'] for Author preference for specific column names
+
+// Bookmark: generator.steps.php at line 1910
+
+require_once('inc/phpMyEdit.mysqli.php');
+
+if(array_key_exists('PME_sys_moreadd', $_REQUEST) || (isset($_REQUEST['PME_sys_operation']) && $_REQUEST['PME_sys_operation'] == 'Add')){ $opts['cgi']['overwrite']['deleted'] = '0'; }
+
+new phpMyEdit($opts);
+
+if(!empty($date_picker_mode_status) && $warnings = mysqli_get_warnings($opts['dbh'])){
+   printf('<p class="text-danger">Warnings: %s</p>', htmlentities(implode(', ', $warnings)));
+}
+
+mysqli_close($opts['dbh']);
+
+require_once('inc/footer.php');
+
+// Bookmark: generator.steps.php at line 1979
+
+?>

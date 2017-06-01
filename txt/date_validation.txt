@@ -1,0 +1,54 @@
+The following was derived from a forum posting at
+http://opensource.platon.sk/forum/projects/viewtopic.php?p=607#607
+
+1. Set the invocation to the trigger file
+
+// set the trigger on this table
+
+$opts['triggers']['update']['before']= 'inc/triggers/date_validate.inc.php';
+
+$opts['triggers']['insert']['before']= 'inc/triggers/date_validate.inc.php';
+
+2. Contents of trigger file (date_validate.inc.php)
+
+function valid_date($string)
+{
+   // Date validation: YYYYMMDD or YYYY/MM/DD or YYYY-MM-DD or YYYY.MM.DD
+   if(strpos($string, '-')){
+      $token = '-';
+   }elseif(strpos($string, '/')){
+      $token = '/';
+   }elseif(strpos($string, '.')){
+      $token = '.';
+   }else{
+      if(strlen($string) == 8){
+         if(checkdate(substr($string, 4, 2),substr($string, 6, 2),substr($string, 0, 4))){
+            return true;
+         }
+      }
+   }
+   if(empty($token)){
+      return false;
+   }else{
+      $parts = explode($token, $string);
+      $yr = @$parts[0];
+      $mo = @$parts[1];
+      $da = @$parts[2];
+      if($yr > 2037 || $yr < 1900 || !is_numeric($da) || !is_numeric($mo) || !is_numeric($yr) || !checkdate($mo,$da,$yr)) {
+         return false;
+      }
+      return true;
+   }
+};
+
+$field_name = 'my_date_field';
+
+if(!valid_date($newvals[$field_name])){
+
+   die('<h3> $input_date is not a valid date! </h3>');
+
+}
+
+
+
+

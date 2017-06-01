@@ -1,0 +1,43 @@
+Approximately 67 language files are included, for the purpose of translating common labels (View, Change, coPy, Delete, etc.)
+
+Users may need to apply utf8_encode() to values in language files which contain accented characters.
+
+http://opensource.platon.sk/projects/doc.php/phpMyEdit/html/configuration.languages.html
+
+-----
+
+UTF8 requires the usage of 2 META tags:
+
+<meta http-equiv="charset" content="UTF-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+-----
+
+If using MySQL standard connection, the UTF8 database connection needs to include two additional queries:
+
+mysql_query('SET NAMES UTF8');
+mysql_query('SET COLLATION_CONNECTION=UTF8_GENERAL_CI');
+
+-----
+
+If using MySQL Improved Connection then:
+
+$opts['charset'] = 'utf8';
+
+if(!$link_charset = @mysqli_character_set_name($opts['dbh'])){
+
+    $info[] = 'Cannot resolve mysqli_character_set_name()';
+
+}else{
+
+	if($link_charset != $opts['charset']){
+
+		if(!mysqli_set_charset($opts['dbh'], $opts['charset'])){
+
+		    $errors[] = 'Error loading character set: '.mysqli_error($opts['dbh']);
+
+		}
+
+	}
+
+}
